@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tools – Accessibility Hub</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
+
+    <header role="banner">
+      <div class="header-inner">
+        <a href="index.html" aria-label="Infinum Accessibility Hub – Home">
+          <span class="site-logo" aria-hidden="true">♿</span>
+          <span class="site-name">Infinum Accessibility Hub</span>
+        </a>
+      </div>
+    </header>
+
+    <div class="layout">
+      <nav class="sidebar" aria-label="Section navigation">
+        <section>  <a href="index.html" class="sidebar-home-link sidebar-heading">Home</a> </section>
+
+
+        <section aria-labelledby="nav-wow">
+          <h2 class="sidebar-heading" id="nav-wow">Way of Working</h2>
+          <ul role="list">
+            <li><a href="ways-of-working.html#biz-dev">Biz Dev</a></li>
+            <li><a href="ways-of-working.html#ux">UX</a></li>
+            <li><a href="ways-of-working.html#visual-design">Visual Design</a></li>
+            <li><a href="ways-of-working.html#dev">Dev</a></li>
+            <li><a href="ways-of-working.html#qa">QA</a></li>
+          </ul>
+        </section>
+
+        <section aria-labelledby="nav-tools">
+          <h2 class="sidebar-heading" id="nav-tools" aria-current="page">Tools</h2>
+          <ul role="list">
+            <li><a href="#screen-readers">Screen Readers</a></li>
+            <li><a href="#auditing-tools">Auditing Tools</a></li>
+            <li><a href="#browser-extensions">Browser Extensions</a></li>
+            <li><a href="#design-tools">Design Tools</a></li>
+          </ul>
+        </section>
+
+        <section aria-labelledby="nav-legal">
+          <h2 class="sidebar-heading" id="nav-legal">Legal</h2>
+          <ul role="list">
+            <li><a href="legal.html#united-states">United States</a></li>
+            <li><a href="legal.html#european-union">European Union</a></li>
+            <li><a href="legal.html#united-kingdom">United Kingdom</a></li>
+            <li><a href="legal.html#canada">Canada</a></li>
+            <li><a href="legal.html#australia">Australia</a></li>
+            <li><a href="legal.html#international">International Standards</a></li>
+          </ul>
+        </section>
+        <p class="sidebar-group-label">Components</p>
+
+        <section aria-labelledby="nav-interactive">
+          <h2 class="sidebar-heading" id="nav-interactive">Interactive Controls</h2>
+          <ul role="list">
+            <li><a href="components/buttons-vs-links.html">Buttons vs Links</a></li>
+            <li><a href="components/checkboxes-radios.html">Checkboxes &amp; Radios</a></li>
+            <li><a href="components/date-time-pickers.html">Date &amp; Time Pickers</a></li>
+            <li><a href="components/dropdowns-select.html">Dropdowns &amp; Select Menus</a></li>
+            <li><a href="components/file-upload.html">File Upload Fields</a></li>
+            <li><a href="components/password-fields.html">Password Fields</a></li>
+            <li><a href="components/search-bars.html">Search Bars</a></li>
+            <li><a href="components/sliders-range.html">Sliders &amp; Range Inputs</a></li>
+            <li><a href="components/steppers.html">Steppers</a></li>
+            <li><a href="components/text-inputs.html">Text Inputs</a></li>
+            <li><a href="components/toggle-switches.html">Toggle Switches</a></li>
+          </ul>
+        </section>
+
+        <section aria-labelledby="nav-navigation">
+          <h2 class="sidebar-heading" id="nav-navigation">Navigation</h2>
+          <ul role="list">
+            <li><a href="components/bottom-nav-bar.html">Bottom Navigation Bar</a></li>
+            <li><a href="components/breadcrumbs.html">Breadcrumbs</a></li>
+            <li><a href="components/footer-nav.html">Footer</a></li>
+            <li><a href="components/mega-menu.html">Mega Menu</a></li>
+            <li><a href="components/pagination.html">Pagination</a></li>
+            <li><a href="components/sidebar-drawer.html">Sidebar / Drawer</a></li>
+            <li><a href="components/skip-to-content.html">Skip to Content Link</a></li>
+            <li><a href="components/progress-steps.html">Stepper / Progress Steps</a></li>
+            <li><a href="components/tabs.html">Tabs</a></li>
+            <li><a href="components/top-nav-bar.html">Top Navigation Bar</a></li>
+          </ul>
+        </section>
+
+        <section aria-labelledby="nav-feedback">
+          <h2 class="sidebar-heading" id="nav-feedback">Feedback &amp; Status</h2>
+          <ul role="list">
+            <li><a href="components/banners.html">Banners</a></li>
+            <li><a href="components/empty-states.html">Empty States</a></li>
+            <li><a href="components/notifications.html">Notifications &amp; Alerts</a></li>
+            <li><a href="components/progress-bars-loaders.html">Progress Bars &amp; Loaders</a></li>
+            <li><a href="components/skeleton-screens.html">Skeleton Screens</a></li>
+            <li><a href="components/toast-snackbar.html">Toast / Snackbar</a></li>
+          </ul>
+        </section>
+
+        <section aria-labelledby="nav-overlays">
+          <h2 class="sidebar-heading" id="nav-overlays">Overlays &amp; Containers</h2>
+          <ul role="list">
+            <li><a href="components/bottom-sheets.html">Bottom Sheets</a></li>
+            <li><a href="components/modals.html">Modals &amp; Dialogs</a></li>
+            <li><a href="components/popovers.html">Popovers</a></li>
+            <li><a href="components/tooltips.html">Tooltips</a></li>
+          </ul>
+        </section>
+
+        <section aria-labelledby="nav-data">
+          <h2 class="sidebar-heading" id="nav-data">Data Display</h2>
+          <ul role="list">
+            <li><a href="components/badges-tags.html">Badges &amp; Tags / Chips</a></li>
+            <li><a href="components/cards.html">Cards</a></li>
+            <li><a href="components/dividers.html">Dividers &amp; Separators</a></li>
+            <li><a href="components/lists.html">Lists</a></li>
+            <li><a href="components/stat-displays.html">Stat / Metric Displays</a></li>
+            <li><a href="components/tables.html">Tables</a></li>
+            <li><a href="components/timelines.html">Timelines</a></li>
+          </ul>
+        </section>
+
+        <section aria-labelledby="nav-media">
+          <h2 class="sidebar-heading" id="nav-media">Media &amp; Content</h2>
+          <ul role="list">
+            <li><a href="components/audio.html">Audio</a></li>
+            <li><a href="components/carousels.html">Carousels / Sliders</a></li>
+            <li><a href="components/embeds.html">Embeds</a></li>
+            <li><a href="components/images.html">Images &amp; Icons</a></li>
+            <li><a href="components/video.html">Video</a></li>
+          </ul>
+        </section>
+
+        <section aria-labelledby="nav-layout">
+          <h2 class="sidebar-heading" id="nav-layout">Layout &amp; Structure</h2>
+          <ul role="list">
+            <li><a href="components/accordions.html">Accordions</a></li>
+            <li><a href="components/sticky-fixed.html">Sticky / Fixed Elements</a></li>
+            <li><a href="components/semantic-structure.html">Semantic Structure</a></li>
+          </ul>
+        </section>
+
+      </nav>
+
+      <main id="main-content" tabindex="-1">
+        <article>
+          <header>
+            <h1>Tools</h1>
+            <p class="lead">A guide to the tools that help teams test, audit, and experience the web through the lens of accessibility.</p>
+          </header>
+
+          <section id="screen-readers" aria-labelledby="screen-readers-heading">
+            <h2 id="screen-readers-heading">Screen Readers</h2>
+            
+            <p>Screen readers are assistive technology that converts on-screen content into synthesized speech or Braille output. Testing with real screen readers is the most reliable way to verify the accessibility of your product. The data below is drawn from the <a href="https://webaim.org/projects/screenreadersurvey10/" target="_blank" rel="noopener">WebAIM Screen Reader Survey #10 <span class="visually-hidden">(opens WebAIM)</span></a>.</p>
+
+            <h3 id="sr-browser-pairings">Browser pairings</h3>
+            <p>Screen readers and browsers must work together. Using a screen reader with a non-recommended browser can produce inconsistent or incorrect output. The most common combinations used by real screen reader users are:</p>
+            <table aria-labelledby="sr-browser-pairings">
+              <thead>
+                <tr>
+                  <th scope="col">Screen reader</th>
+                  <th scope="col">Browser</th>
+                  <th scope="col">% of users</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>JAWS</td>
+                  <td>Chrome</td>
+                  <td>24.7%</td>
+                </tr>
+                <tr>
+                  <td>NVDA</td>
+                  <td>Chrome</td>
+                  <td>21.3%</td>
+                </tr>
+                <tr>
+                  <td>JAWS</td>
+                  <td>Edge</td>
+                  <td>11.4%</td>
+                </tr>
+                <tr>
+                  <td>NVDA</td>
+                  <td>Firefox</td>
+                  <td>10.0%</td>
+                </tr>
+                <tr>
+                  <td>VoiceOver</td>
+                  <td>Safari</td>
+                  <td>7.0%</td>
+                </tr>
+                <tr>
+                  <td>NVDA</td>
+                  <td>Edge</td>
+                  <td>5.0%</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <h3>JAWS</h3>
+            <p><strong>Primary screen reader on Windows.</strong> JAWS (Job Access With Speech) by Freedom Scientific is the most widely used primary screen reader at 40.5% market share. Best paired with <strong>Chrome</strong> or <strong>Edge</strong>.</p>
+            <details>
+              <summary>Quick start guide</summary>
+              <ul>
+                <li><a href="https://www.freedomscientific.com/products/software/jaws/" target="_blank" rel="noopener">Download JAWS <span class="visually-hidden">(opens Freedom Scientific)</span></a> — a 40-minute demo mode is available without a license</li>
+                <li><strong>Start/stop:</strong> Launch from the desktop shortcut or Start menu. JAWS starts reading automatically. Press <kbd>Insert</kbd>+<kbd>F4</kbd> to quit.</li>
+                <li><strong>Reading:</strong> <kbd>Insert</kbd>+<kbd>Down Arrow</kbd> reads from the current position. <kbd>Ctrl</kbd> stops speech.</li>
+                <li><strong>Navigation:</strong> <kbd>Tab</kbd> moves between focusable elements. <kbd>H</kbd> jumps to the next heading; <kbd>Shift</kbd>+<kbd>H</kbd> goes back. <kbd>B</kbd> jumps to buttons, <kbd>F</kbd> to form fields, <kbd>L</kbd> to lists.</li>
+                <li><strong>Virtual cursor vs. forms mode:</strong> JAWS uses a virtual cursor for reading content. When a form field is focused it automatically switches to forms/application mode. Press <kbd>Enter</kbd> to manually enter forms mode; <kbd>Numpad Plus</kbd> or <kbd>Esc</kbd> to exit.</li>
+                <li><strong>Links list:</strong> <kbd>Insert</kbd>+<kbd>F7</kbd> opens a list of all links on the page — useful for spot-checking link text quality.</li>
+                <li><strong>Headings list:</strong> <kbd>Insert</kbd>+<kbd>F6</kbd> opens a list of all headings — useful for auditing heading structure.</li>
+              </ul>
+            </details>
+
+            <h3>NVDA</h3>
+            <p><strong>Free and open-source screen reader for Windows.</strong> NVDA (NonVisual Desktop Access) is used by 65.6% of screen reader users (many as a secondary reader) and is the go-to free option for accessibility testing. Best paired with <strong>Chrome</strong> or <strong>Firefox</strong>.</p>
+            <details>
+              <summary>Quick start guide</summary>
+              <ul>
+                <li><a href="https://www.nvaccess.org/download/" target="_blank" rel="noopener">Download NVDA <span class="visually-hidden">(opens NV Access)</span></a> — free, open-source</li>
+                <li><strong>Start/stop:</strong> Launch from the desktop or Start menu. Press <kbd>Insert</kbd>+<kbd>Q</kbd> to quit (confirm in the dialog that appears).</li>
+                <li><strong>Reading:</strong> <kbd>Insert</kbd>+<kbd>Down Arrow</kbd> reads from the current position. <kbd>Ctrl</kbd> stops speech.</li>
+                <li><strong>Navigation:</strong> <kbd>Tab</kbd> between focusable elements. Single-letter quick keys work in browse mode: <kbd>H</kbd> for headings, <kbd>B</kbd> for buttons, <kbd>F</kbd> for form fields, <kbd>L</kbd> for lists, <kbd>T</kbd> for tables.</li>
+                <li><strong>Browse vs. forms mode:</strong> NVDA uses browse mode for reading web content. It automatically switches to focus/forms mode when you interact with a form field. Press <kbd>Insert</kbd>+<kbd>Space</kbd> to toggle modes manually.</li>
+                <li><strong>Elements list:</strong> <kbd>Insert</kbd>+<kbd>F7</kbd> opens a filterable list of headings, links, and landmarks — excellent for auditing page structure.</li>
+                <li><strong>Speech viewer:</strong> Tools → Speech Viewer shows all NVDA output as text — very helpful when testing without audio.</li>
+              </ul>
+            </details>
+
+            <h3>VoiceOver (macOS)</h3>
+            <p><strong>Built-in screen reader on macOS.</strong> VoiceOver is used by 43.9% of screen reader users and is the standard tool for testing on Apple platforms. Best paired with <strong>Safari</strong>.</p>
+            <details>
+              <summary>Quick start guide</summary>
+              <ul>
+                <li><strong>No download needed</strong> — built into macOS. Enable at System Settings → Accessibility → VoiceOver, or press <kbd>Command</kbd>+<kbd>F5</kbd>.</li>
+                <li><strong>Start/stop:</strong> <kbd>Command</kbd>+<kbd>F5</kbd> toggles VoiceOver on and off.</li>
+                <li><strong>The VO modifier:</strong> Most VoiceOver commands use the VO key, which is <kbd>Control</kbd>+<kbd>Option</kbd> (abbreviated <kbd>VO</kbd>).</li>
+                <li><strong>Reading:</strong> <kbd>VO</kbd>+<kbd>A</kbd> reads from the current position. <kbd>Ctrl</kbd> stops speech.</li>
+                <li><strong>Navigation:</strong> <kbd>Tab</kbd> moves between interactive elements. <kbd>VO</kbd>+<kbd>Right Arrow</kbd> moves to the next item in the VoiceOver cursor. <kbd>VO</kbd>+<kbd>U</kbd> opens the rotor — a quick navigation menu for headings, links, landmarks, form controls, and tables.</li>
+                <li><strong>Interacting with elements:</strong> <kbd>VO</kbd>+<kbd>Shift</kbd>+<kbd>Down Arrow</kbd> enters a group or widget; <kbd>VO</kbd>+<kbd>Shift</kbd>+<kbd>Up Arrow</kbd> exits it.</li>
+                <li><strong>Quick Nav:</strong> Press <kbd>Left Arrow</kbd>+<kbd>Right Arrow</kbd> simultaneously to toggle Quick Nav, which lets you navigate with just the arrow keys without holding VO.</li>
+              </ul>
+            </details>
+
+            <h3>VoiceOver (iOS)</h3>
+            <p><strong>Built-in screen reader on iPhone and iPad.</strong> VoiceOver on iOS is the dominant mobile screen reader — used by 70.6% of mobile screen reader users. Best paired with <strong>Safari</strong>.</p>
+            <details>
+              <summary>Quick start guide</summary>
+              <ul>
+                <li><strong>No download needed</strong> — built into iOS. Enable at Settings → Accessibility → VoiceOver, or ask Siri "Turn on VoiceOver". Set up the Accessibility Shortcut (triple-click the side/home button) for quick toggling.</li>
+                <li><strong>Reading:</strong> Tap any element to hear it. Swipe right to move to the next element; swipe left for the previous.</li>
+                <li><strong>Activating elements:</strong> Double-tap to activate the focused element (equivalent to a tap).</li>
+                <li><strong>Scrolling:</strong> Use a three-finger swipe up or down to scroll.</li>
+                <li><strong>The rotor:</strong> Rotate two fingers on screen like a dial to open the rotor, which lets you change navigation mode (headings, links, words, characters, etc.). Once a mode is set, swipe up/down to navigate by that unit.</li>
+                <li><strong>Escape:</strong> Two-finger scrub (move two fingers back and forth in a Z shape) to go back or dismiss an overlay — equivalent to pressing Escape or a back button.</li>
+              </ul>
+            </details>
+
+            <h3>TalkBack (Android)</h3>
+            <p><strong>Built-in screen reader on Android.</strong> TalkBack is used by 34.7% of mobile screen reader users and is the primary tool for testing accessibility on Android devices. Best paired with <strong>Chrome</strong>.</p>
+            <details>
+              <summary>Quick start guide</summary>
+              <ul>
+                <li><strong>No download needed</strong> — built into Android. Enable at Settings → Accessibility → TalkBack. The exact path varies by device manufacturer. Set up the accessibility shortcut (hold both volume keys) for quick toggling.</li>
+                <li><strong>Reading:</strong> Tap any element to hear it. Swipe right to move to the next element; swipe left for the previous.</li>
+                <li><strong>Activating elements:</strong> Double-tap to activate the focused element.</li>
+                <li><strong>Scrolling:</strong> Use a two-finger swipe up or down to scroll.</li>
+                <li><strong>Reading controls:</strong> Swipe up then right (or down then right) to open reading controls — TalkBack's equivalent of VoiceOver's rotor. Use it to navigate by headings, links, controls, or paragraphs.</li>
+                <li><strong>Global context menu:</strong> Swipe down then right to open the global context menu, which provides quick access to navigation and reading options.</li>
+              </ul>
+            </details>
+
+            <h3>Narrator</h3>
+            <p><strong>Built-in screen reader on Windows.</strong> Narrator is included with all Windows installations and requires no setup. While it has a low primary usage rate (0.7%), it is commonly used as a secondary reader (37.3%) and is useful for quick spot-checks on machines where JAWS or NVDA are not installed. Best paired with <strong>Edge</strong>.</p>
+            <details>
+              <summary>Quick start guide</summary>
+              <ul>
+                <li><strong>No download needed</strong> — built into Windows 10 and 11. Press <kbd>Windows</kbd>+<kbd>Ctrl</kbd>+<kbd>Enter</kbd> to toggle Narrator on and off.</li>
+                <li><strong>Reading:</strong> <kbd>Narrator key</kbd>+<kbd>M</kbd> starts reading from the current position. The Narrator key is <kbd>Caps Lock</kbd> or <kbd>Insert</kbd> (configurable).</li>
+                <li><strong>Navigation:</strong> <kbd>Tab</kbd> between interactive elements. <kbd>Narrator key</kbd>+<kbd>F5</kbd> lists headings; <kbd>Narrator key</kbd>+<kbd>F6</kbd> lists landmarks; <kbd>Narrator key</kbd>+<kbd>F7</kbd> lists links.</li>
+                <li><strong>Scan mode:</strong> <kbd>Narrator key</kbd>+<kbd>Space</kbd> toggles scan mode, which allows navigation with arrow keys and single-letter shortcuts similar to NVDA's browse mode.</li>
+              </ul>
+            </details>
+          </section>
+
+          <section id="auditing-tools" aria-labelledby="auditing-tools-heading">
+            <h2 id="auditing-tools-heading">Auditing Tools</h2>
+            <p>Automated tools can catch a significant portion of accessibility issues quickly, but they cannot catch everything — estimates suggest <b>automated tools find around 30–40% of all WCAG failures</b>. Always combine automated scanning with manual keyboard testing and screen reader testing.</p>
+
+            <h3>axe DevTools</h3>
+            <p><a href="https://www.deque.com/axe/devtools/" target="_blank" rel="noopener">axe DevTools <span class="visually-hidden">(opens Deque)</span></a> by Deque is the industry-standard accessibility testing engine, used as the foundation for many other tools including Lighthouse. It is available as a browser extension for Chrome and Firefox, and as a library that can be integrated into automated test suites.</p>
+         
+
+            <h3>Lighthouse</h3>
+            <p><a href="https://developer.chrome.com/docs/lighthouse/overview/" target="_blank" rel="noopener">Lighthouse <span class="visually-hidden">(opens Chrome Developers)</span></a> is an open-source, automated auditing tool built into Chrome DevTools. It runs audits for performance, SEO, and accessibility, and is useful for a quick health check during development.</p>
+          
+
+            <h3>WAVE</h3>
+            <p><a href="https://wave.webaim.org/" target="_blank" rel="noopener">WAVE <span class="visually-hidden">(opens WebAIM)</span></a> (Web Accessibility Evaluation Tool) by WebAIM provides visual feedback about the accessibility of web content by injecting icons and indicators directly into the page.</p>
+         
+
+            <h3>Keyboard testing</h3>
+            <p>Keyboard testing requires no tools — just unplug or disable your mouse and attempt to use the page using only the keyboard. It is one of the most effective manual tests you can run, and it surfaces issues that no automated tool can catch.</p>
+            <ul>
+              <li><kbd>Tab</kbd> — move focus forward through interactive elements (links, buttons, inputs)</li>
+              <li><kbd>Shift</kbd>+<kbd>Tab</kbd> — move focus backward</li>
+              <li><kbd>Enter</kbd> — activate a link or button</li>
+              <li><kbd>Space</kbd> — activate a button, checkbox, or select; scroll the page</li>
+              <li><kbd>Arrow keys</kbd> — navigate within a widget (radio group, listbox, tab panel, slider)</li>
+              <li><kbd>Escape</kbd> — dismiss a modal, tooltip, dropdown, or other overlay</li>
+            </ul>
+            <p>Things to check during keyboard testing:</p>
+            <ul>
+              <li><strong>Focus visibility</strong> — can you always see which element has focus? The focus indicator must be clearly visible at all times.</li>
+              <li><strong>Focus order</strong> — does focus move in a logical, meaningful sequence that matches the visual layout?</li>
+              <li><strong>No focus traps</strong> — except in modals (where trapping is intentional), can you always Tab away from any component?</li>
+              <li><strong>All interactive elements reachable</strong> — every button, link, and form field must be reachable by keyboard.</li>
+              <li><strong>No keyboard-only bugs</strong> — do dropdowns, date pickers, and custom widgets open, operate, and close correctly without a mouse?</li>
+            </ul>
+          </section>
+
+          <section id="browser-extensions" aria-labelledby="browser-extensions-heading">
+            <h2 id="browser-extensions-heading">Browser Extensions</h2>
+
+            <h3>HeadingsMap</h3>
+            <p><a href="https://chromewebstore.google.com/detail/headingsmap/flbjommegcjonpdmenkdiocclhjacmbi" target="_blank" rel="noopener">HeadingsMap <span class="visually-hidden">(opens Chrome Web Store)</span></a> generates a visual map of the heading structure of any page in a sidebar panel. It is one of the fastest ways to audit heading hierarchy without a screen reader.</p>
+            <ul>
+              <li>Shows all headings (h1–h6) in a nested tree, making skipped levels and incorrect nesting immediately obvious.</li>
+              <li>Clicking a heading in the panel scrolls to and highlights that heading on the page.</li>
+              <li>Also displays ARIA landmark regions and the document outline, useful for verifying overall page structure.</li>
+              <li>Available for <a href="https://chromewebstore.google.com/detail/headingsmap/flbjommegcjonpdmenkdiocclhjacmbi" target="_blank" rel="noopener">Chrome <span class="visually-hidden">(opens Chrome Web Store)</span></a> and <a href="https://addons.mozilla.org/en-US/firefox/addon/headingsmap/" target="_blank" rel="noopener">Firefox <span class="visually-hidden">(opens Firefox Add-ons)</span></a>.</li>
+            </ul>
+          </section>
+
+          <section id="design-tools" aria-labelledby="design-tools-heading">
+            <h2 id="design-tools-heading">Design Tools</h2>
+            <p>See <a href="https://www.figma.com/design/XHKlFNWIQAEU81KlhrtjJY/Accessibility-Guidelines?node-id=3827-5790&t=HxPbR19bT8UFQaWi-4">useful tools and plugins</a> in the Accessibility Figma file</p>
+          </section>
+
+
+          <section>
+            <h2>Resources</h2>
+            <ul>
+              <li><a href="https://www.youtube.com/watch?v=yV_ENQZq3fs">How to Check Web Accessibility with a Screen Reader and Keyboard</a> - YouTube Video by Infinum's Kerrin Whipple</li>
+            </ul>
+          </section>
+
+          <section>
+            <h2> AI </h2>
+            <p>AI tools can be helpful for brainstorming accessibility solutions, generating alt text, generating accessible code and explaining concepts — but they cannot replace real user testing with assistive technologies. Always verify AI-generated suggestions with manual testing and real users.</p>
+
+            <ul>
+              <li><a href="https://chatgpt.com/g/g-6880f2d9ab1481919e7717b527f7ecf2-accessibility-report-assistant">Accessibiity Report Assistant</a> - created by Infinum's Ana Šekerija, it's a tool that can be used to
+              generate sections for an accessibility report </li>
+            </ul>
+          </section>
+     
+        </article>
+      </main>
+    </div>
+
+    <footer role="contentinfo">
+      <p>&copy; <span id="year"></span> Accessibility Hub. Built with accessibility in mind.</p>
+    </footer>
+
+    <script src="sidebar.js"></script>
+    <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+  </body>
+</html>

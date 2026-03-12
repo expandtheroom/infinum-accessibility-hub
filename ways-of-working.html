@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Way of Working – Accessibility Hub</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
+
+    <header role="banner">
+      <div class="header-inner">
+        <a href="index.html" aria-label="Infinum Accessibility Hub – Home">
+          <span class="site-logo" aria-hidden="true">♿</span>
+          <span class="site-name">Infinum Accessibility Hub</span>
+        </a>
+      </div>
+    </header>
+
+    <div class="layout">
+      <nav class="sidebar" aria-label="Section navigation">
+        <section>  <a href="index.html" class="sidebar-home-link sidebar-heading">Home</a> </section>
+
+
+        <section aria-labelledby="nav-wow">
+          <h2 class="sidebar-heading" id="nav-wow" aria-current="page">Way of Working</h2>
+          <ul role="list">
+            <li><a href="#biz-dev">Biz Dev</a></li>
+            <li><a href="#producers">Producers</a></li>
+            <li><a href="#ux">UX</a></li>
+            <li><a href="#visual-design">Visual Design</a></li>
+            <li><a href="#dev">Dev</a></li>
+            <li><a href="#qa">QA</a></li>
+          </ul>
+        </section>
+
+        <section aria-labelledby="nav-tools">
+          <h2 class="sidebar-heading" id="nav-tools">Tools</h2>
+          <ul role="list">
+            <li><a href="tools.html#screen-readers">Screen Readers</a></li>
+            <li><a href="tools.html#auditing-tools">Auditing Tools</a></li>
+            <li><a href="tools.html#browser-extensions">Browser Extensions</a></li>
+            <li><a href="tools.html#design-tools">Design Tools</a></li>
+          </ul>
+        </section>
+
+        <section aria-labelledby="nav-legal">
+          <h2 class="sidebar-heading" id="nav-legal">Legal</h2>
+          <ul role="list">
+            <li><a href="legal.html#united-states">United States</a></li>
+            <li><a href="legal.html#european-union">European Union</a></li>
+            <li><a href="legal.html#united-kingdom">United Kingdom</a></li>
+            <li><a href="legal.html#canada">Canada</a></li>
+            <li><a href="legal.html#australia">Australia</a></li>
+            <li><a href="legal.html#international">International Standards</a></li>
+          </ul>
+        </section>
+        <p class="sidebar-group-label">Components</p>
+
+        <section aria-labelledby="nav-interactive">
+          <h2 class="sidebar-heading" id="nav-interactive">Interactive Controls</h2>
+          <ul role="list">
+            <li><a href="components/buttons-vs-links.html">Buttons vs Links</a></li>
+            <li><a href="components/checkboxes-radios.html">Checkboxes &amp; Radios</a></li>
+            <li><a href="components/date-time-pickers.html">Date &amp; Time Pickers</a></li>
+            <li><a href="components/dropdowns-select.html">Dropdowns &amp; Select Menus</a></li>
+            <li><a href="components/file-upload.html">File Upload Fields</a></li>
+            <li><a href="components/password-fields.html">Password Fields</a></li>
+            <li><a href="components/search-bars.html">Search Bars</a></li>
+            <li><a href="components/sliders-range.html">Sliders &amp; Range Inputs</a></li>
+            <li><a href="components/steppers.html">Steppers</a></li>
+            <li><a href="components/text-inputs.html">Text Inputs</a></li>
+            <li><a href="components/toggle-switches.html">Toggle Switches</a></li>
+          </ul>
+        </section>
+
+        <section aria-labelledby="nav-navigation">
+          <h2 class="sidebar-heading" id="nav-navigation">Navigation</h2>
+          <ul role="list">
+            <li><a href="components/bottom-nav-bar.html">Bottom Navigation Bar</a></li>
+            <li><a href="components/breadcrumbs.html">Breadcrumbs</a></li>
+            <li><a href="components/footer-nav.html">Footer</a></li>
+            <li><a href="components/mega-menu.html">Mega Menu</a></li>
+            <li><a href="components/pagination.html">Pagination</a></li>
+            <li><a href="components/sidebar-drawer.html">Sidebar / Drawer</a></li>
+            <li><a href="components/skip-to-content.html">Skip to Content Link</a></li>
+            <li><a href="components/progress-steps.html">Stepper / Progress Steps</a></li>
+            <li><a href="components/tabs.html">Tabs</a></li>
+            <li><a href="components/top-nav-bar.html">Top Navigation Bar</a></li>
+          </ul>
+        </section>
+
+        <section aria-labelledby="nav-feedback">
+          <h2 class="sidebar-heading" id="nav-feedback">Feedback &amp; Status</h2>
+          <ul role="list">
+            <li><a href="components/banners.html">Banners</a></li>
+            <li><a href="components/empty-states.html">Empty States</a></li>
+            <li><a href="components/notifications.html">Notifications &amp; Alerts</a></li>
+            <li><a href="components/progress-bars-loaders.html">Progress Bars &amp; Loaders</a></li>
+            <li><a href="components/skeleton-screens.html">Skeleton Screens</a></li>
+            <li><a href="components/toast-snackbar.html">Toast / Snackbar</a></li>
+          </ul>
+        </section>
+
+        <section aria-labelledby="nav-overlays">
+          <h2 class="sidebar-heading" id="nav-overlays">Overlays &amp; Containers</h2>
+          <ul role="list">
+            <li><a href="components/bottom-sheets.html">Bottom Sheets</a></li>
+            <li><a href="components/modals.html">Modals &amp; Dialogs</a></li>
+            <li><a href="components/popovers.html">Popovers</a></li>
+            <li><a href="components/tooltips.html">Tooltips</a></li>
+          </ul>
+        </section>
+
+        <section aria-labelledby="nav-data">
+          <h2 class="sidebar-heading" id="nav-data">Data Display</h2>
+          <ul role="list">
+            <li><a href="components/badges-tags.html">Badges &amp; Tags / Chips</a></li>
+            <li><a href="components/cards.html">Cards</a></li>
+            <li><a href="components/dividers.html">Dividers &amp; Separators</a></li>
+            <li><a href="components/lists.html">Lists</a></li>
+            <li><a href="components/stat-displays.html">Stat / Metric Displays</a></li>
+            <li><a href="components/tables.html">Tables</a></li>
+            <li><a href="components/timelines.html">Timelines</a></li>
+          </ul>
+        </section>
+
+        <section aria-labelledby="nav-media">
+          <h2 class="sidebar-heading" id="nav-media">Media &amp; Content</h2>
+          <ul role="list">
+            <li><a href="components/audio.html">Audio</a></li>
+            <li><a href="components/carousels.html">Carousels / Sliders</a></li>
+            <li><a href="components/embeds.html">Embeds</a></li>
+            <li><a href="components/images.html">Images &amp; Icons</a></li>
+            <li><a href="components/video.html">Video</a></li>
+          </ul>
+        </section>
+
+        <section aria-labelledby="nav-layout">
+          <h2 class="sidebar-heading" id="nav-layout">Layout &amp; Structure</h2>
+          <ul role="list">
+            <li><a href="components/accordions.html">Accordions</a></li>
+            <li><a href="components/sticky-fixed.html">Sticky / Fixed Elements</a></li>
+            <li><a href="components/semantic-structure.html">Semantic Structure</a></li>
+          </ul>
+        </section>
+
+      </nav>
+
+      <main id="main-content" tabindex="-1">
+        <article>
+          <header>
+            <h1>Way of Working</h1>
+            <p class="lead">Accessibility is a shared responsibility. Here's how each discipline integrates it into their work.</p>
+          </header>
+
+          <section id="biz-dev" aria-labelledby="biz-dev-heading">
+            <h2 id="biz-dev-heading">Biz Dev</h2>
+            <ul>
+              <li><strong>All projects should seek to meet WCAG 2.2 Level AA by default</strong> — this should be the baseline expectation set during scoping, not a bolt-on at the end. If a client explicitly descopes accessibility, this should be documented.</li>
+              <li><strong>Include a baseline accessibility allocation in every project estimate</strong> — plan for <strong>[X] hours</strong> of accessibility consideration in design and <strong>[X] hours</strong> in development. This should be included as line items in our estimate templates.</li>
+              <li>
+                <strong>Accessibility-specific engagements should be scoped separately:</strong>
+                <ul>
+                  <li><strong>Audit of an existing product</strong> — 30–40 hours. Covers identifying unique page templates, testing each against WCAG criteria (keyboard, screen reader, zoom, contrast, etc.), and producing a written report with prioritized findings.</li>
+                  <li><strong>Follow-up audit after remediation</strong> — 20–30 hours. Re-tests the issues identified in the original audit to verify fixes, and checks for any regressions.</li>
+                  <li><strong>VPAT (Voluntary Product Accessibility Template)</strong> — 10 hours in addition to the audit. Produces a formal conformance report in VPAT format, required by many enterprise and government clients.</li>
+                </ul>
+              </li>
+            </ul>
+
+                 <h3>Resources</h3>
+            <ul>
+<li><a href="legal.html">Legal Reference</a></li>              
+            </ul>
+          </section>
+
+          <section id="producers" aria-labelledby="producers-heading">
+            <h2 id="producers-heading">Producers</h2>
+            <ul>
+              <li><strong>Know the guidelines well enough to hold the team accountable</strong> — producers do not need to be accessibility experts, but they should be familiar with the expectations across UX, visual design, development, and QA outlined in this hub. This allows you to catch gaps early and advocate for the right outcomes when tradeoffs arise.</li>
+              <li><strong>Make accessibility testing a scheduled, named phase</strong> — accessibility review must appear explicitly in the project schedule. It should not be absorbed into general QA time or left open-ended at the end of the project. Assign clear owners and define what "done" looks like (e.g. zero WCAG AA blockers, reviewed against this hub's component checklist).</li>
+              <li><strong>Build accessibility into estimates and statements of work from the start</strong> — coordinate with Biz Dev to ensure that accessibility hours are included in the project scope. If a client removes accessibility from scope, document this explicitly and flag the legal and reputational risks.</li>
+              <li><strong>Track accessibility issues and sign-off at each handoff gate</strong> — treat open accessibility issues like open bugs. At each handoff (UX to visual design, design to dev, dev to QA), confirm that the outgoing discipline has completed their accessibility responsibilities before the baton passes. Do not let issues accumulate until the end.</li>
+              <li><strong>Raise accessibility blockers early with clients</strong> — if a client-directed design decision, third-party integration, or scope reduction creates an accessibility risk, flag it in writing as soon as it is identified. Decisions made late in a project are significantly harder and more expensive to remedy.</li>
+            </ul>
+
+                       <h3>Resources</h3>
+            <ul>
+<li><a href="legal.html">Legal Reference</a></li>  
+          </section>
+
+          <section id="ux" aria-labelledby="ux-heading">
+            <h2 id="ux-heading">UX</h2>
+            <ul>
+              <li><strong>Review the UX guidelines for the specific components you are designing</strong> — the components section of this hub contains interaction-specific guidance. Check it before finalising flows or handing off.</li>
+              <li>
+                <strong>Consider accessibility use cases throughout the design process, not just at review</strong> — ask questions like:
+                <ul>
+                  <li>Is this interaction cognitively taxing? Could it be simplified?</li>
+                  <li>Does this require a complex gesture (e.g. multi-finger swipe, long press) that may be difficult for some users to perform?</li>
+                  <li>Does this feature rely on unlabeled icons or color alone to convey meaning?</li>
+                  <li>Is there a time limit on this interaction? Can it be extended or removed?</li>
+                </ul>
+              </li>
+              <li>
+                <strong>Annotate designs with accessibility-specific documentation before handoff</strong> — annotations reduce ambiguity and prevent developers from making incorrect assumptions. Include:
+                <ul>
+                  <li>Whether each interactive element is a <code>&lt;button&gt;</code> or <code>&lt;a&gt;</code></li>
+                  <li>Focus order for complex layouts and modal flows</li>
+                  <li>Accessible names for icon-only controls, images, and form fields</li>
+                  <li>Any expected ARIA roles, states, or live region behavior</li>
+                </ul>
+              </li>
+            </ul>
+
+                 <h3>Resources</h3>
+            <ul>
+              <li><a href="https://www.figma.com/design/XHKlFNWIQAEU81KlhrtjJY/Accessibility-Guidelines?node-id=3827-5790&t=HxPbR19bT8UFQaWi-4">Useful Plugins and Tools</a></li>
+              <li><a href="https://www.figma.com/design/XHKlFNWIQAEU81KlhrtjJY/Accessibility-Guidelines?node-id=510-29462&t=HxPbR19bT8UFQaWi-1">Accessibility Guidelines Figma</a></li>
+                 <li>
+                <a href="https://learn.infinum.com/courses/accessibility-guidelines-for-designers/">Infinum Learn's Accessibility Guidelines for Designers
+                 
+                </a>
+              </li>
+
+               <li>
+                <a href="https://learn.infinum.com/courses/accessibility-way-of-working/">Infinum Learn's Accessibility WoW for Designers</a>
+              </li>
+            </ul>
+          </section>
+
+          <section id="visual-design" aria-labelledby="visual-design-heading">
+            <h2 id="visual-design-heading">Visual Design</h2>
+            <ul>
+              <li><strong>Review the visual design guidelines for the specific components you are designing</strong> — the components section of this hub contains visual-specific guidance for each component type.</li>
+              <li><strong>Always test color contrast and document which combinations are accessible</strong> — for every color palette, produce a matrix showing which foreground/background pairings meet WCAG AA (4.5:1 for text, 3:1 for UI elements) and which do not. Figma plugins like <a href="figma.com/community/plugin/993414361395505148/contrast-grid">Contrast Grid</a> can automate this.</li>
+              <li><strong>Always design a skip to main content link</strong> — it must be the first focusable element on every page and must be visible when focused. Design it as a styled component, not an afterthought.</li>
+              <li><strong>Always design the focused state for every interactive element</strong> — focus indicators must be visible and meet WCAG 2.2 contrast requirements (3:1 against adjacent colors, minimum 2px outline). Do not leave focus styling to the browser default.</li>
+              <li><strong>Consider producing a high-contrast and an enlarged-font variant</strong> — this does not need to cover every screen. A representative sample (e.g. home, a form, a data table) showing how the design holds up at 200% font size and with OS high-contrast mode enabled is valuable guidance for developers.</li>
+              <li><strong>Never use color or shape alone to convey meaning</strong> — error states, status indicators, chart data, and required fields must always include a text label or icon in addition to color. This is a WCAG Level A requirement.</li>
+            </ul>
+
+            <h3>Resources</h3>
+            <ul>
+              <li><a href="https://www.figma.com/design/XHKlFNWIQAEU81KlhrtjJY/Accessibility-Guidelines?node-id=3827-5790&t=HxPbR19bT8UFQaWi-4">Useful Plugins and Tools</a></li>
+              <li><a href="https://www.figma.com/design/XHKlFNWIQAEU81KlhrtjJY/Accessibility-Guidelines?node-id=510-29462&t=HxPbR19bT8UFQaWi-1">Accessibility Guidelines Figma</a></li>
+                 <li>
+                <a href="https://learn.infinum.com/courses/accessibility-guidelines-for-designers/">Infinum Learn's Accessibility Guidelines for Designers
+                 
+                </a>
+              </li>
+
+               <li>
+                <a href="https://learn.infinum.com/courses/accessibility-way-of-working/">Infinum Learn's Accessibility WoW for Designers</a>
+              </li>
+            </ul>
+          </section>
+
+          <section id="dev" aria-labelledby="dev-heading">
+            <h2 id="dev-heading">Dev</h2>
+            <ul>
+              <li><strong>Review the dev guidelines for the specific components you are building</strong> — the components section of this hub contains implementation guidance for each component type, including correct HTML semantics, ARIA usage, and keyboard behavior.</li>
+              <li><strong>Build with accessibility in mind from the start, not as a remediation step</strong> — retrofitting accessibility onto inaccessible markup is significantly more expensive than getting the semantics right first. Use native HTML elements wherever possible before reaching for ARIA.</li>
+              <li><strong>Test for accessibility as you build, not only at the end</strong> — run axe or Lighthouse on each component as it is developed. Test keyboard navigation and basic screen reader behavior before submitting for review.</li>
+              <li><strong>Ask designers when something is unclear</strong> — if a handoff is missing focus states, accessible names, or interaction annotations, ask before making assumptions. Incorrect implementations are harder to fix after QA.</li>
+            </ul>
+
+            <h3>Resources</h3>
+            <ul>
+               <li>
+                <a href="https://github.com/infinum/accessibility-mobile-standards" target="_blank" rel="noopener">Infinum Mobile Accessibility Standards <span class="visually-hidden">(opens GitHub)</span></a>
+                — Accessibility guidelines and checklists for iOS and Android
+              </li>
+            </ul>
+          </section>
+
+          <section id="qa" aria-labelledby="qa-heading">
+            <h2 id="qa-heading">QA</h2>
+            <ul>
+              <li><strong>Identify unique page templates before beginning an audit</strong> — when auditing a product that was not built by our team, start by cataloguing the distinct templates (e.g. home, listing, detail, form, checkout). Test one representative instance of each rather than duplicating effort across identical pages.</li>
+              <li>
+                <strong>Test each template across multiple assistive technologies and input methods:</strong>
+                <ul>
+                  <li><strong>Keyboard only</strong> — tab through every interactive element, verify visible focus indicators, confirm all functionality is reachable and operable without a mouse</li>
+                  <li><strong>Screen reader</strong> — test with at least two screen reader and browser combinations (e.g. NVDA + Chrome, VoiceOver + Safari) and verify that content, roles, states, and labels are announced correctly</li>
+                  <li><strong>Switch access on mobile</strong> — verify that interactive elements can be reached and activated using iOS Switch Control or Android Switch Access</li>
+                </ul>
+              </li>
+              <li><strong>Enlarge the font to 200% and check for content loss</strong> — increase the browser font size to 200% (not zoom, but text size) and verify that no content is clipped, overlapping, or lost. This tests WCAG 1.4.4 Resize Text.</li>
+              <li><strong>Toggle light mode and dark mode on mobile</strong> — switch the OS appearance setting and verify that contrast, colors, and component states are correct in both modes, particularly for custom color schemes that may not follow the system palette.</li>
+            </ul>
+            <h3>Resources</h3>
+            <ul>
+              <li>
+                <a href="https://docs.google.com/document/d/1lxG9cS1xHO4VpedeVsbeAb9lxyanO6480phzqS4q5wY/edit?tab=t.0"> Accessibility Report Template</a>
+              </li>
+                
+              <li><a href="https://chatgpt.com/g/g-6880f2d9ab1481919e7717b527f7ecf2-accessibility-report-assistant">Accessibiity Report Assistant</a> - created by Infinum's Ana Šekerija, it's a tool that can be used to
+              generate sections for an accessibility report </li>
+            
+            </ul>
+          </section>
+
+          <section aria-labelledby="wow-further-reading-heading">
+            <h2 id="wow-further-reading-heading">Further reading</h2>
+            <ul>
+              <li>
+                <a href="https://infinum.com/handbook/accessibility/design/intro">Design accessibility: Introduction <span class="visually-hidden">(opens Infinum Accessibility Handbook)</span></a>
+                — Infinum Accessibility Handbook
+              </li>
+              <li>
+                <a href="https://infinum.com/handbook/accessibility/design/accessibility-review">Accessibility Review <span class="visually-hidden">(opens Infinum Accessibility Handbook)</span></a>
+                — Infinum Accessibility Handbook
+              </li>
+              <li>
+                <a href="https://infinum.com/handbook/accessibility/web/guidelines/introduction">Web accessibility guidelines: Introduction <span class="visually-hidden">(opens Infinum Accessibility Handbook)</span></a>
+                — Infinum Accessibility Handbook
+              </li>
+              <li>
+                <a href="https://infinum.com/handbook/accessibility/qa/accessibility-testing-for-web/introduction">QA – Accessibility testing for web: Introduction <span class="visually-hidden">(opens Infinum Accessibility Handbook)</span></a>
+                — Infinum Accessibility Handbook
+              </li>
+              <li>
+                <a href="https://github.com/infinum/accessibility-mobile-standards/blob/master/docs/accessibility_checklist.md">Mobile accessibility checklist <span class="visually-hidden">(opens Infinum Mobile Accessibility Standards on GitHub)</span></a>
+                — Infinum Mobile Accessibility Standards
+              </li>
+              <li>
+                <a href="https://github.com/infinum/accessibility-mobile-standards/blob/master/docs/introduction.md">Introduction to mobile accessibility <span class="visually-hidden">(opens Infinum Mobile Accessibility Standards on GitHub)</span></a>
+                — Infinum Mobile Accessibility Standards
+              </li>
+            </ul>
+          </section>
+        </article>
+      </main>
+    </div>
+
+    <footer role="contentinfo">
+      <p>&copy; <span id="year"></span> Accessibility Hub. Built with accessibility in mind.</p>
+    </footer>
+
+    <script src="sidebar.js"></script>
+    <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+  </body>
+</html>

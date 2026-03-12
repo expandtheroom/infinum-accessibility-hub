@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Top Navigation Bar / Header – Accessibility Hub</title>
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body>
+
+    <header role="banner">
+      <div class="header-inner">
+        <a href="../index.html" aria-label="Infinum Accessibility Hub – Home">
+          <span class="site-logo" aria-hidden="true">♿</span>
+          <span class="site-name">Infinum Accessibility Hub</span>
+        </a>
+      </div>
+    </header>
+
+
+    <div class="layout">
+      <nav class="sidebar" aria-label="Section navigation">
+        <section>  <a href="../index.html" class="sidebar-home-link sidebar-heading">Home</a> </section>
+
+
+        <section aria-labelledby="nav-wow">
+          <h2 class="sidebar-heading" id="nav-wow">Way of Working</h2>
+          <ul role="list">
+            <li><a href="../ways-of-working.html#biz-dev">Biz Dev</a></li>
+            <li><a href="../ways-of-working.html#producers">Producers</a></li>
+            <li><a href="../ways-of-working.html#ux">UX</a></li>
+            <li><a href="../ways-of-working.html#visual-design">Visual Design</a></li>
+            <li><a href="../ways-of-working.html#dev">Dev</a></li>
+            <li><a href="../ways-of-working.html#qa">QA</a></li>
+          </ul>
+        </section>
+
+        <section aria-labelledby="nav-tools">
+          <h2 class="sidebar-heading" id="nav-tools">Tools</h2>
+          <ul role="list">
+            <li><a href="../tools.html#screen-readers">Screen Readers</a></li>
+            <li><a href="../tools.html#auditing-tools">Auditing Tools</a></li>
+            <li><a href="../tools.html#browser-extensions">Browser Extensions</a></li>
+            <li><a href="../tools.html#design-tools">Design Tools</a></li>
+          </ul>
+        </section>
+
+        <section aria-labelledby="nav-legal">
+          <h2 class="sidebar-heading" id="nav-legal">Legal</h2>
+          <ul role="list">
+            <li><a href="../legal.html#united-states">United States</a></li>
+            <li><a href="../legal.html#european-union">European Union</a></li>
+            <li><a href="../legal.html#united-kingdom">United Kingdom</a></li>
+            <li><a href="../legal.html#canada">Canada</a></li>
+            <li><a href="../legal.html#australia">Australia</a></li>
+            <li><a href="../legal.html#international">International Standards</a></li>
+          </ul>
+        </section>
+        <p class="sidebar-group-label">Components</p>
+
+        <section aria-labelledby="nav-interactive">
+          <h2 class="sidebar-heading" id="nav-interactive">Interactive Controls</h2>
+          <ul role="list">
+            <li><a href="buttons-vs-links.html">Buttons vs Links</a></li>
+            <li><a href="checkboxes-radios.html">Checkboxes &amp; Radios</a></li>
+            <li><a href="date-time-pickers.html">Date &amp; Time Pickers</a></li>
+            <li><a href="dropdowns-select.html">Dropdowns &amp; Select Menus</a></li>
+            <li><a href="file-upload.html">File Upload Fields</a></li>
+            <li><a href="password-fields.html">Password Fields</a></li>
+            <li><a href="search-bars.html">Search Bars</a></li>
+            <li><a href="sliders-range.html">Sliders &amp; Range Inputs</a></li>
+            <li><a href="steppers.html">Steppers</a></li>
+            <li><a href="text-inputs.html">Text Inputs</a></li>
+            <li><a href="toggle-switches.html">Toggle Switches</a></li>
+          </ul>
+        </section>
+
+        <section aria-labelledby="nav-navigation">
+          <h2 class="sidebar-heading" id="nav-navigation">Navigation</h2>
+          <ul role="list">
+            <li><a href="bottom-nav-bar.html">Bottom Navigation Bar</a></li>
+            <li><a href="breadcrumbs.html">Breadcrumbs</a></li>
+            <li><a href="footer-nav.html">Footer</a></li>
+            <li><a href="mega-menu.html">Mega Menu</a></li>
+            <li><a href="pagination.html">Pagination</a></li>
+            <li><a href="sidebar-drawer.html">Sidebar / Drawer</a></li>
+            <li><a href="skip-to-content.html">Skip to Content Link</a></li>
+            <li><a href="progress-steps.html">Stepper / Progress Steps</a></li>
+            <li><a href="tabs.html">Tabs</a></li>
+            <li><a href="top-nav-bar.html" aria-current="page">Top Navigation Bar</a></li>
+          </ul>
+        </section>
+
+        <section aria-labelledby="nav-feedback">
+          <h2 class="sidebar-heading" id="nav-feedback">Feedback &amp; Status</h2>
+          <ul role="list">
+            <li><a href="banners.html">Banners</a></li>
+            <li><a href="empty-states.html">Empty States</a></li>
+            <li><a href="notifications.html">Notifications &amp; Alerts</a></li>
+            <li><a href="progress-bars-loaders.html">Progress Bars &amp; Loaders</a></li>
+            <li><a href="skeleton-screens.html">Skeleton Screens</a></li>
+            <li><a href="toast-snackbar.html">Toast / Snackbar</a></li>
+          </ul>
+        </section>
+
+        <section aria-labelledby="nav-overlays">
+          <h2 class="sidebar-heading" id="nav-overlays">Overlays &amp; Containers</h2>
+          <ul role="list">
+            <li><a href="bottom-sheets.html">Bottom Sheets</a></li>
+            <li><a href="modals.html">Modals &amp; Dialogs</a></li>
+            <li><a href="popovers.html">Popovers</a></li>
+            <li><a href="tooltips.html">Tooltips</a></li>
+          </ul>
+        </section>
+
+        <section aria-labelledby="nav-data">
+          <h2 class="sidebar-heading" id="nav-data">Data Display</h2>
+          <ul role="list">
+            <li><a href="badges-tags.html">Badges &amp; Tags / Chips</a></li>
+            <li><a href="cards.html">Cards</a></li>
+            <li><a href="dividers.html">Dividers &amp; Separators</a></li>
+            <li><a href="lists.html">Lists</a></li>
+            <li><a href="stat-displays.html">Stat / Metric Displays</a></li>
+            <li><a href="tables.html">Tables</a></li>
+            <li><a href="timelines.html">Timelines</a></li>
+          </ul>
+        </section>
+
+        <section aria-labelledby="nav-media">
+          <h2 class="sidebar-heading" id="nav-media">Media &amp; Content</h2>
+          <ul role="list">
+            <li><a href="audio.html">Audio</a></li>
+            <li><a href="carousels.html">Carousels / Sliders</a></li>
+            <li><a href="embeds.html">Embeds</a></li>
+            <li><a href="images.html">Images &amp; Icons</a></li>
+            <li><a href="video.html">Video</a></li>
+          </ul>
+        </section>
+
+        <section aria-labelledby="nav-layout">
+          <h2 class="sidebar-heading" id="nav-layout">Layout &amp; Structure</h2>
+          <ul role="list">
+            <li><a href="accordions.html">Accordions</a></li>
+            <li><a href="sticky-fixed.html">Sticky / Fixed Elements</a></li>
+            <li><a href="semantic-structure.html">Semantic Structure</a></li>
+          </ul>
+        </section>
+
+      </nav>
+
+      <main id="main-content" tabindex="-1">
+        <article>
+          <header>
+            <h1>Top Navigation Bar / Header</h1>
+            <p class="lead">Accessible top navigation bar patterns with keyboard navigation and correct landmark structure.</p>
+          </header>
+
+          <section aria-labelledby="design-heading">
+            <h2 id="design-heading">Design guidelines</h2>
+
+            <h3>UX guidelines</h3>
+            <ul>
+              <li>The logo or brand link must be clearly visible and distinct — users expect it to navigate to the home page, so it should appear at the top-left on LTR layouts.</li>
+              <li>At mobile breakpoints, replace the nav with an accessible hamburger menu pattern — the collapsed state must be equally navigable to the expanded state.</li>
+              <li>If the header is sticky, account for its height in the page scroll offset so focused elements below are never obscured by the header.</li>
+            </ul>
+
+            <h3>Visual design guidelines</h3>
+            <ul>
+              <li>Primary nav items must be spaced comfortably for both click and touch — insufficient spacing causes mis-taps on mobile.</li>
+              <li>The active page link must be visually indicated using more than color alone — bold text, an underline, or a border beneath the active link ensures color-blind users can identify the current page.</li>
+              <li>All interactive nav items must have visible hover and focus states designed as part of the component — do not rely solely on the browser default focus ring.</li>
+              <li>Ensure sufficient contrast between the nav background color and link text in all states (default, hover, active, focus).</li>
+            </ul>
+          </section>
+
+          <section aria-labelledby="dev-heading">
+            <h2 id="dev-heading">Dev guidelines for web</h2>
+            <ul>
+              <li>Use a native <code>&lt;header&gt;</code> as a direct child of <code>&lt;body&gt;</code> — it maps implicitly to the <code>banner</code> landmark role without needing <code>role="banner"</code>.</li>
+              <li>Place the primary nav inside <code>&lt;nav aria-label="Primary navigation"&gt;</code> — each <code>&lt;nav&gt;</code> on the page must have a distinct <code>aria-label</code> so screen reader landmark lists are unambiguous.</li>
+              <li>Apply <code>aria-current="page"</code> to the active link in the nav — screen readers announce this as "current page", giving non-sighted users the same orientation cue as the visual active state.</li>
+              <li>The hamburger toggle must be <code>&lt;button aria-expanded="false" aria-controls="mobile-nav" aria-label="Open menu"&gt;</code>; update <code>aria-expanded</code> to <code>"true"</code> when the mobile nav is open.</li>
+              <li>For sticky headers, set <code>scroll-margin-top</code> on all anchor targets equal to the header height: <code>:root { --header-height: 80px; } :target, [id] { scroll-margin-top: var(--header-height); }</code>.</li>
+              <li>The skip link must point past the header: <code>&lt;a class="skip-link" href="#main-content"&gt;Skip to main content&lt;/a&gt;</code> — see the <a href="skip-to-content.html">Skip to Content Link</a> page for full implementation guidance.</li>
+            </ul>
+          
+            <h3>Example code</h3>
+            <div class="code-example">
+              <div role="tablist" aria-label="Top navigation bar example">
+                <button role="tab" class="tab-btn" id="tab-code-top-nav-bar" aria-selected="true" aria-controls="panel-code-top-nav-bar">Code</button>
+                <button role="tab" class="tab-btn" id="tab-preview-top-nav-bar" aria-selected="false" aria-controls="panel-preview-top-nav-bar" tabindex="-1">Live example</button>
+              </div>
+              <div role="tabpanel" id="panel-code-top-nav-bar" aria-labelledby="tab-code-top-nav-bar">
+                <pre><code>&lt;header role="banner"&gt;
+  &lt;a href="/" aria-label="Acme Corp &amp;#x2013; Home"&gt;
+    Acme Corp
+  &lt;/a&gt;
+
+  &lt;!-- Mobile menu toggle --&gt;
+  &lt;button
+    type="button"
+    aria-haspopup="true"
+    aria-expanded="false"
+    aria-controls="main-nav"
+    aria-label="Open navigation menu"
+  &gt;
+    &lt;span aria-hidden="true"&gt;&amp;#9776;&lt;/span&gt;
+  &lt;/button&gt;
+
+  &lt;nav id="main-nav" aria-label="Main navigation"&gt;
+    &lt;ul&gt;
+      &lt;li&gt;&lt;a href="/" aria-current="page"&gt;Home&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href="/products"&gt;Products&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href="/about"&gt;About&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/nav&gt;
+&lt;/header&gt;</code></pre>
+              </div>
+              <div role="tabpanel" id="panel-preview-top-nav-bar" aria-labelledby="tab-preview-top-nav-bar" hidden>
+                <div class="live-example">
+                  <header role="banner" style="background:#1a1a1a;color:#fff;border-radius:8px;overflow:hidden">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem">
+    <a href="#" onclick="return false" aria-label="Acme Corp &#x2013; Home" style="color:#fff;text-decoration:none;font-weight:700;font-size:1rem">Acme Corp</a>
+    <button type="button" aria-haspopup="true" aria-expanded="false" aria-controls="demo-topnav" aria-label="Open navigation menu" style="background:none;border:1px solid rgba(255,255,255,.3);border-radius:4px;color:#fff;padding:.35rem .6rem;cursor:pointer;font-size:1rem" onclick="var n=document.getElementById('demo-topnav');var open=this.getAttribute('aria-expanded')==='true';this.setAttribute('aria-expanded',String(!open));n.hidden=open">
+      <span aria-hidden="true">&#9776;</span>
+    </button>
+  </div>
+  <nav id="demo-topnav" aria-label="Main navigation" hidden style="border-top:1px solid rgba(255,255,255,.15)">
+    <ul style="list-style:none;padding:.5rem 0;margin:0">
+      <li><a href="#" onclick="return false" aria-current="page" style="display:block;padding:.5rem 1rem;color:#fff;text-decoration:none;background:rgba(255,255,255,.1);font-size:.9rem">Home</a></li>
+      <li><a href="#" onclick="return false" style="display:block;padding:.5rem 1rem;color:rgba(255,255,255,.8);text-decoration:none;font-size:.9rem">Products</a></li>
+      <li><a href="#" onclick="return false" style="display:block;padding:.5rem 1rem;color:rgba(255,255,255,.8);text-decoration:none;font-size:.9rem">About</a></li>
+    </ul>
+  </nav>
+</header>
+                </div>
+              </div>
+            </div>
+</section>
+          <section aria-labelledby="further-reading-heading">
+            <h2 id="further-reading-heading">Further reading</h2>
+            <ul>
+              <li>
+                <a href="https://infinum.com/handbook/accessibility/web/guidelines/level-a/operable/navigable">Navigable – WCAG Level A <span class="visually-hidden">(opens Infinum Accessibility Handbook)</span></a>
+                — Infinum Accessibility Handbook
+              </li>
+              <li>
+                <a href="https://infinum.com/handbook/accessibility/design/operable">Design – Operable <span class="visually-hidden">(opens Infinum Accessibility Handbook)</span></a>
+                — Infinum Accessibility Handbook
+              </li>
+              <li>
+                <a href="https://github.com/infinum/accessibility-mobile-standards/blob/master/docs/principles/operable_principle.md">Operable principle <span class="visually-hidden">(opens Infinum Mobile Accessibility Standards on GitHub)</span></a>
+                — Infinum Mobile Accessibility Standards
+              </li>
+              <li>
+                <a href="https://github.com/infinum/accessibility-mobile-standards/blob/master/docs/principles/understandable_principle.md">Understandable principle <span class="visually-hidden">(opens Infinum Mobile Accessibility Standards on GitHub)</span></a>
+                — Infinum Mobile Accessibility Standards
+              </li>
+            </ul>
+          </section>
+        </article>
+      </main>
+    </div>
+    <footer role="contentinfo">
+      <p>&copy; <span id="year"></span> Accessibility Hub. Built with accessibility in mind.</p>
+    </footer>
+    <script src="../sidebar.js"></script>
+    <script src="../tabs.js"></script>
+    <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+  </body>
+</html>
