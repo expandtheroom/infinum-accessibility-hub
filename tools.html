@@ -42,6 +42,8 @@
             <li><a href="#browser-extensions">Browser Extensions</a></li>
             <li><a href="#design-tools">Design Tools</a></li>
             <li><a href="#checklists-templates">Checklists and templates</a></li>
+            <li><a href="#ai">AI</a></li>
+            <li><a href="#accessibility-overlays">Accessibility Overlays</a></li>
           </ul>
         </section>
 
@@ -356,14 +358,34 @@
 
          
 
-          <section>
-            <h2> AI </h2>
+          <section id="ai" aria-labelledby="ai-heading">
+            <h2 id="ai-heading">AI</h2>
             <p>AI tools can be helpful for brainstorming accessibility solutions, generating alt text, generating accessible code and explaining concepts — but they cannot replace real user testing with assistive technologies. Always verify AI-generated suggestions with manual testing and real users.</p>
 
             <ul>
               <li> Accessibility Report Assistant - created by Infinum's Ana Šekerija, it's a tool that can be used to
               generate sections for an accessibility report. Content Ana or Kerrin Whipple for access </li>
             </ul>
+          </section>
+
+          <section id="accessibility-overlays" aria-labelledby="accessibility-overlays-heading">
+            <h2 id="accessibility-overlays-heading">❌ Accessibility Overlays</h2>
+            <p>Accessibility overlays are third-party JavaScript products added to websites that claim to automatically fix accessibility issues. <strong>Do not use them, and do not recommend them to clients.</strong></p>
+
+            <p>Overlays put a "coat of paint" over inaccessible code without fixing the underlying problems. Rather than genuinely improving a product's accessibility, they introduce new barriers for the very users they claim to help — and they cannot deliver the WCAG compliance their vendors promise.</p>
+
+            <h3>Why overlays cause more harm than good</h3>
+            <ul>
+              <li><strong>They don't fix the source.</strong> Accessibility must be built into the code. Overlays patch over broken HTML, missing labels, and poor keyboard support at the surface level — the underlying barriers remain for assistive technologies that bypass or ignore the overlay script.</li>
+              <li><strong>They actively harm assistive technology users.</strong> Screen reader users frequently report that overlays break focus order, introduce incorrect heading structures, and make pages harder — or impossible — to use. According to the WebAIM Practitioner Survey, 72% of users with disabilities find overlays ineffective, and some resort to blocking overlay scripts entirely just to access a site.</li>
+              <li><strong>The widget controls are redundant.</strong> People with disabilities already use operating system and assistive technology settings (zoom, contrast, screen readers) that are far more reliable than overlay widgets. Overlays add noise, not value.</li>
+              <li><strong>They don't achieve compliance.</strong> WCAG conformance requires meeting all applicable success criteria. Because overlays cannot address every barrier — especially in dynamic content, PDFs, and media — they cannot deliver the legal protection vendors market.</li>
+              <li><strong>They raise privacy concerns.</strong> Overlays detect assistive technology use, exposing a user's disability status without informed consent. Some persist this data across sites via cookies, which may violate GDPR and CCPA.</li>
+            </ul>
+
+            <p>The expert community is clear on this. The <a href="https://overlayfactsheet.com/en/" target="_blank" rel="noopener">Overlay Factsheet <span class="visually-hidden">(opens overlayfactsheet.com)</span></a> has over 1,000 signatories — including contributors to the W3C WCAG and ARIA specifications, accessibility teams at Google, Microsoft, Apple, the BBC, and Shopify, screen reader developers, and disabled users themselves. The US FTC secured a $1 million settlement against an overlay vendor for making false compliance claims.</p>
+
+            <p>The only effective path to accessibility is building it correctly from the ground up.</p>
           </section>
            <section>
             <h2>Resources</h2>
