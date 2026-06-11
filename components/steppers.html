@@ -241,6 +241,121 @@
             </div>
 </section>
 
+          <section aria-labelledby="dev-ios-heading">
+            <h2 id="dev-ios-heading">Dev guidelines for iOS</h2>
+            <ul>
+              <li><strong>Use <code>.accessibilityElement(children: .combine)</code> on the stepper group</strong> — this merges the decrement button, value display, and increment button into a single VoiceOver focus target, preventing users from having to navigate three separate elements to understand the control. Apply it to the container <code>HStack</code> wrapping all three elements.</li>
+              <li><strong>Provide a descriptive <code>.accessibilityLabel</code> that includes the item being counted</strong> — e.g. <code>.accessibilityLabel("Quantity")</code>. Without this, VoiceOver will concatenate the child text ("minus 1 plus"), which is confusing and loses context about what is being incremented.</li>
+              <li><strong>Set <code>.accessibilityValue</code> to the current numeric value as a string</strong> — e.g. <code>.accessibilityValue("\(quantity)")</code>. This surfaces the current state to VoiceOver users separately from the label so they hear "Quantity, 3" rather than needing to parse it from the label text.</li>
+              <li><strong>Add <code>.accessibilityAdjustableAction</code> to support swipe-up/swipe-down increment and decrement</strong> — this is the expected gesture pattern for adjustable controls in VoiceOver. Apply the <code>.isAdjustable</code> trait alongside it so VoiceOver announces "adjustable" and prompts users to swipe up or down.</li>
+              <li><strong>Use <code>UIAccessibility.post(notification: .announcement, argument: "...")</code> if the stepper affects other content on screen</strong> — for example, if changing quantity updates a cart total elsewhere, post an announcement such as "Total updated to $45" so screen reader users are aware of the side effect.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>struct QuantityStepper: View {
+    @State private var quantity: Int = 1
+    let minimum: Int = 1
+    let maximum: Int = 99
+
+    var body: some View {
+        HStack(spacing: 0) {
+            Button {
+                if quantity &gt; minimum { quantity -= 1 }
+            } label: {
+                Image(systemName: "minus")
+                    .frame(width: 44, height: 44)
+            }
+            .disabled(quantity &lt;= minimum)
+            .accessibilityHidden(true)
+
+            Text("\(quantity)")
+                .frame(minWidth: 44)
+                .accessibilityHidden(true)
+
+            Button {
+                if quantity &lt; maximum { quantity += 1 }
+            } label: {
+                Image(systemName: "plus")
+                    .frame(width: 44, height: 44)
+            }
+            .disabled(quantity &gt;= maximum)
+            .accessibilityHidden(true)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Quantity")
+        .accessibilityValue("\(quantity)")
+        .accessibilityAddTraits(.isAdjustable)
+        .accessibilityAdjustableAction { direction in
+            switch direction {
+            case .increment:
+                if quantity &lt; maximum { quantity += 1 }
+            case .decrement:
+                if quantity &gt; minimum { quantity -= 1 }
+            @unknown default:
+                break
+            }
+        }
+    }
+}</code></pre>
+            </div>
+          </section>
+          <section aria-labelledby="dev-android-heading">
+            <h2 id="dev-android-heading">Dev guidelines for Android</h2>
+            <ul>
+              <li><strong>Apply <code>Modifier.semantics { contentDescription = "..." }</code> to the stepper container</strong> — include both the label and current value in the description, e.g. <code>"Quantity, 3"</code>. Without this, TalkBack announces each child button and text separately, fragmenting the user experience into three focus stops.</li>
+              <li><strong>Use <code>mergeDescendants = true</code> on the container semantics</strong> — this collapses the decrement button, value display, and increment button into a single focusable unit in TalkBack, matching the recommended pattern for steppers where the whole control has one logical purpose.</li>
+              <li><strong>Add <code>customActions</code> for increment and decrement</strong> — use <code>customActions = listOf(CustomAccessibilityAction("Increase quantity") { ... }, CustomAccessibilityAction("Decrease quantity") { ... })</code>. This exposes both actions via TalkBack's local context menu so users can activate them without having to find individual tap targets.</li>
+              <li><strong>Set <code>stateDescription</code> to the current value</strong> — e.g. <code>stateDescription = quantity.toString()</code>. TalkBack reads this as the state of the control, separate from the content description, giving users a clear "Quantity — 3" announcement that updates as the value changes.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>@Composable
+fun QuantityStepper(
+    quantity: Int,
+    onDecrement: () -&gt; Unit,
+    onIncrement: () -&gt; Unit,
+    min: Int = 1,
+    max: Int = 99
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.semantics(mergeDescendants = true) {
+            contentDescription = "Quantity"
+            stateDescription = quantity.toString()
+            customActions = listOf(
+                CustomAccessibilityAction("Increase quantity") {
+                    if (quantity &lt; max) { onIncrement(); true } else false
+                },
+                CustomAccessibilityAction("Decrease quantity") {
+                    if (quantity &gt; min) { onDecrement(); true } else false
+                }
+            )
+        }
+    ) {
+        IconButton(
+            onClick = onDecrement,
+            enabled = quantity &gt; min,
+            modifier = Modifier.clearAndSetSemantics {}
+        ) {
+            Icon(Icons.Default.Remove, contentDescription = null)
+        }
+        Text(
+            text = quantity.toString(),
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .clearAndSetSemantics {}
+        )
+        IconButton(
+            onClick = onIncrement,
+            enabled = quantity &lt; max,
+            modifier = Modifier.clearAndSetSemantics {}
+        ) {
+            Icon(Icons.Default.Add, contentDescription = null)
+        }
+    }
+}</code></pre>
+            </div>
+          </section>
           <section aria-labelledby="further-reading-heading">
             <h2 id="further-reading-heading">Further reading</h2>
             <ul>

@@ -246,6 +246,111 @@
             </div>
 </section>
 
+          <section aria-labelledby="dev-ios-heading">
+            <h2 id="dev-ios-heading">Dev guidelines for iOS</h2>
+            <ul>
+              <li><strong>Always provide an <code>.accessibilityLabel</code> when the visible label is not read automatically</strong> — for custom-styled text inputs where VoiceOver may not pick up the associated label, set <code>.accessibilityLabel("Email address")</code> directly on the <code>TextField</code> to give it an explicit name.</li>
+              <li><strong>Use <code>.accessibilityHint</code> to describe expected input format</strong> — add a hint such as <code>.accessibilityHint("Enter your country code followed by your number, for example plus 44 7700 900000")</code>. VoiceOver announces this after the label and value, giving users context without cluttering the visible UI.</li>
+              <li><strong>Announce validation errors as live region updates</strong> — when an inline error message appears after failed validation, post a VoiceOver announcement using <code>UIAccessibility.post(notification: .announcement, argument: "Invalid email address. Please enter a valid email.")</code> so users who have already moved focus away still hear the error.</li>
+              <li><strong>Use <code>.accessibilityValue</code> to surface the current field state</strong> — for fields that display a computed or derived value (e.g. a formatted phone number), use <code>.accessibilityValue("plus 44 7700 900000")</code> to communicate the current content in a screen-reader-friendly form alongside the label.</li>
+              <li><strong>Mark decorative icons and prefix/suffix elements as <code>.accessibilityHidden(true)</code></strong> — currency symbols, lock icons, and other visual decorations inside the input should be hidden from VoiceOver to prevent redundant announcements; their meaning should be conveyed through the label or hint instead.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import SwiftUI
+
+struct AccessibleEmailField: View {
+    @State private var email = ""
+    @State private var hasError = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text("Email address")
+                .font(.subheadline.weight(.semibold))
+
+            TextField("you@example.com", text: $email)
+                .textContentType(.emailAddress)
+                .keyboardType(.emailAddress)
+                .autocapitalization(.none)
+                .accessibilityLabel("Email address")
+                .accessibilityHint("We'll use this to send your receipt")
+                .accessibilityValue(email.isEmpty ? "Empty" : email)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 6)
+                        .stroke(hasError ? Color.red : Color.gray, lineWidth: hasError ? 2 : 1)
+                )
+
+            if hasError {
+                Label("Please enter a valid email address.", systemImage: "exclamationmark.circle")
+                    .foregroundColor(.red)
+                    .font(.caption)
+                    .accessibilityLabel("Error: Please enter a valid email address.")
+            }
+        }
+        .onChange(of: email) { _ in
+            if hasError {
+                UIAccessibility.post(
+                    notification: .announcement,
+                    argument: "Error cleared. Enter a valid email address."
+                )
+            }
+        }
+    }
+}</code></pre>
+            </div>
+          </section>
+          <section aria-labelledby="dev-android-heading">
+            <h2 id="dev-android-heading">Dev guidelines for Android</h2>
+            <ul>
+              <li><strong>Use <code>Modifier.semantics { contentDescription = "..." }</code> only when the visible label cannot be read automatically</strong> — for standard <code>OutlinedTextField</code> with a <code>label</code> parameter, TalkBack reads the label directly; override with <code>contentDescription</code> only if the label is purely visual or missing.</li>
+              <li><strong>Set <code>keyboardOptions</code> to the appropriate keyboard type</strong> — use <code>KeyboardType.Email</code>, <code>KeyboardType.Phone</code>, or <code>KeyboardType.Number</code> to invoke the correct soft keyboard. Pair with <code>autofill</code> hints (<code>AutofillType.EmailAddress</code>, <code>AutofillType.PhoneNumber</code>) to support autofill for users with motor disabilities.</li>
+              <li><strong>Communicate validation errors through <code>isError</code> and a supporting error message</strong> — set <code>isError = true</code> on the <code>OutlinedTextField</code> and provide a <code>supportingText</code> composable that TalkBack reads after the field label. Add <code>Modifier.semantics { error("Please enter a valid email address.") }</code> to programmatically expose the error state.</li>
+              <li><strong>Use <code>LiveRegionMode.Polite</code> for error messages that appear dynamically</strong> — wrap the error text composable with <code>Modifier.semantics { liveRegion = LiveRegionMode.Polite }</code> so TalkBack announces changes to the error state without interrupting the user mid-interaction.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.autofill.AutofillType
+import androidx.compose.ui.semantics.*
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.foundation.text.KeyboardOptions
+
+@Composable
+fun AccessibleEmailField() {
+    var email by remember { mutableStateOf("") }
+    var hasError by remember { mutableStateOf(false) }
+    val errorMessage = "Please enter a valid email address."
+
+    OutlinedTextField(
+        value = email,
+        onValueChange = {
+            email = it
+            hasError = false
+        },
+        label = { Text("Email address") },
+        placeholder = { Text("you@example.com") },
+        isError = hasError,
+        supportingText = {
+            if (hasError) {
+                Text(
+                    text = errorMessage,
+                    modifier = Modifier.semantics {
+                        liveRegion = LiveRegionMode.Polite
+                    }
+                )
+            }
+        },
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+        modifier = Modifier.semantics {
+            if (hasError) error(errorMessage)
+        }
+    )
+}</code></pre>
+            </div>
+          </section>
           <section aria-labelledby="further-reading-heading">
             <h2 id="further-reading-heading">Further reading</h2>
             <ul>

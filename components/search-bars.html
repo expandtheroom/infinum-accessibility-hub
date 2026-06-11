@@ -231,6 +231,171 @@
             </div>
 </section>
 
+          <section aria-labelledby="dev-ios-heading">
+            <h2 id="dev-ios-heading">Dev guidelines for iOS</h2>
+            <ul>
+              <li><strong>Apply <code>.accessibilityLabel("Search")</code> to the search text field</strong> — do not rely on placeholder text as the accessible name. VoiceOver reads placeholder text as a hint only; if the field has no label, users hear "text field" with no context about its purpose.</li>
+              <li><strong>Use <code>UIAccessibility.post(notification: .announcement, argument: "...")</code> to announce result counts</strong> — post the announcement after the results list updates, e.g. "24 results for accessible forms". For zero results, include a suggestion in the announcement string: "No results for accsible forms. Did you mean accessible forms?"</li>
+              <li><strong>Give the clear button an explicit <code>.accessibilityLabel("Clear search")</code></strong> — the system SF Symbol "xmark.circle.fill" has no default VoiceOver label in this context. Show the button only when the field has a value and return focus to the search field after it is activated.</li>
+              <li><strong>For autocomplete suggestion lists, use <code>.accessibilityElement(children: .contain)</code> on the suggestions container</strong> — this keeps each suggestion as a separate focusable VoiceOver element. Add <code>.accessibilityHint("Double tap to apply this suggestion")</code> to each suggestion row so users understand the action before committing.</li>
+              <li><strong>Mark a loading spinner with <code>.accessibilityLabel("Searching")</code> and <code>.accessibilityAddTraits(.updatesFrequently)</code></strong> — this tells VoiceOver the element changes dynamically so it can manage announcement timing, rather than announcing every frame update.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import SwiftUI
+
+struct AccessibleSearchBar: View {
+    @State private var query = ""
+    @State private var results: [String] = []
+    @State private var isLoading = false
+    @State private var resultAnnouncement = ""
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                TextField("e.g. buttons, WCAG, contrast", text: $query)
+                    .accessibilityLabel("Search the site")
+                    .accessibilityHint("Type to search, then activate the Search button")
+                    .submitLabel(.search)
+                    .onSubmit { performSearch() }
+
+                if !query.isEmpty {
+                    Button {
+                        query = ""
+                        results = []
+                        resultAnnouncement = "Search cleared"
+                        UIAccessibility.post(
+                            notification: .announcement,
+                            argument: resultAnnouncement
+                        )
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(.secondary)
+                    }
+                    .accessibilityLabel("Clear search")
+                }
+
+                Button("Search") { performSearch() }
+                    .buttonStyle(.borderedProminent)
+            }
+            .padding()
+            .background(Color(.systemBackground))
+            .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.gray.opacity(0.4)))
+
+            if isLoading {
+                ProgressView()
+                    .accessibilityLabel("Searching")
+                    .accessibilityAddTraits(.updatesFrequently)
+            }
+
+            List(results, id: \.self) { result in
+                Text(result)
+                    .accessibilityHint("Double tap to open this result")
+            }
+            .accessibilityElement(children: .contain)
+        }
+        .padding()
+    }
+
+    private func performSearch() {
+        isLoading = true
+        // Simulate async search
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+            results = query.isEmpty ? [] : ["Result for \(query) 1", "Result for \(query) 2"]
+            isLoading = false
+            let count = results.count
+            resultAnnouncement = count == 0
+                ? "No results for \(query)"
+                : "\(count) results for \(query)"
+            UIAccessibility.post(notification: .announcement, argument: resultAnnouncement)
+        }
+    }
+}</code></pre>
+            </div>
+          </section>
+          <section aria-labelledby="dev-android-heading">
+            <h2 id="dev-android-heading">Dev guidelines for Android</h2>
+            <ul>
+              <li><strong>Set <code>Modifier.semantics { contentDescription = "Search the site" }</code> on the search text field</strong> — TalkBack reads the content description as the field's accessible name. Do not rely on the placeholder (hint text) alone, as TalkBack announces it inconsistently depending on Android version.</li>
+              <li><strong>Use <code>LiveRegionMode.Polite</code> on the results count container</strong> — wrap the result count in a <code>Box</code> with <code>Modifier.semantics { liveRegion = LiveRegionMode.Polite }</code> so TalkBack announces the updated count automatically without moving focus away from the search field.</li>
+              <li><strong>Give the clear button an explicit <code>contentDescription</code> and <code>Role.Button</code></strong> — use <code>Modifier.semantics { role = Role.Button; contentDescription = "Clear search" }</code> on the clear icon. Show the button conditionally when the field is non-empty and return focus to the text field after activation.</li>
+              <li><strong>For autocomplete suggestion lists, use <code>mergeDescendants = false</code> on the list container and apply individual semantics per item</strong> — each suggestion should be a separate focusable TalkBack element with a <code>contentDescription</code> and <code>Role.Button</code> so users can navigate the list item by item and understand the action before activating.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.semantics.*
+
+@Composable
+fun AccessibleSearchBar() {
+    var query by remember { mutableStateOf("") }
+    var results by remember { mutableStateOf(listOf&lt;String&gt;()) }
+    var resultMessage by remember { mutableStateOf("") }
+
+    Column(modifier = Modifier.padding(16.dp)) {
+        OutlinedTextField(
+            value = query,
+            onValueChange = { query = it },
+            placeholder = { Text("e.g. buttons, WCAG, contrast") },
+            label = { Text("Search the site") },
+            trailingIcon = {
+                if (query.isNotEmpty()) {
+                    IconButton(
+                        onClick = {
+                            query = ""
+                            results = emptyList()
+                            resultMessage = "Search cleared"
+                        },
+                        modifier = Modifier.semantics {
+                            role = Role.Button
+                            contentDescription = "Clear search"
+                        }
+                    ) {
+                        Icon(Icons.Default.Clear, contentDescription = null)
+                    }
+                }
+            },
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+            keyboardActions = KeyboardActions(onSearch = {
+                results = if (query.isEmpty()) emptyList()
+                    else listOf("Result for $query 1", "Result for $query 2")
+                resultMessage = if (results.isEmpty()) "No results for $query"
+                    else "${results.size} results for $query"
+            }),
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics { contentDescription = "Search the site" }
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Live region announces result count to TalkBack
+        Box(modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }) {
+            if (resultMessage.isNotEmpty()) {
+                Text(text = resultMessage, style = MaterialTheme.typography.bodySmall)
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        results.forEach { result -&gt;
+            TextButton(
+                onClick = { /* open result */ },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .semantics {
+                        role = Role.Button
+                        contentDescription = result
+                    }
+            ) {
+                Text(result)
+            }
+        }
+    }
+}</code></pre>
+            </div>
+          </section>
           <section aria-labelledby="further-reading-heading">
             <h2 id="further-reading-heading">Further reading</h2>
             <ul>

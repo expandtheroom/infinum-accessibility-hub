@@ -281,6 +281,124 @@
             </div>
           </section>
 
+          <section aria-labelledby="dev-ios-heading">
+            <h2 id="dev-ios-heading">Dev guidelines for iOS</h2>
+            <ul>
+              <li><strong>Use <code>.accessibilityElement(children: .contain)</code> on landmark-equivalent containers.</strong> SwiftUI does not have native landmark roles, but grouping related views inside a container with <code>.contain</code> keeps each child individually focusable — mirroring how a <code>&lt;section&gt;</code> holds distinct interactive elements. Reserve <code>.combine</code> for genuinely atomic units (e.g. an icon + label pair) where reading them separately adds no value.</li>
+              <li><strong>Mark section headings with <code>.accessibilityAddTraits(.isHeader)</code>.</strong> VoiceOver users can navigate by headings using the rotor. Any <code>Text</code> view that visually acts as a section or page title must carry this trait so it appears in the heading list. Apply it to the view that maps to your <code>h1</code> / <code>h2</code> / <code>h3</code> equivalent — don't skip levels.</li>
+              <li><strong>Provide explicit <code>.accessibilityLabel("...")</code> on unnamed container views.</strong> When a grouping view has no visible heading text, VoiceOver has nothing to announce for the region. Assign a concise, descriptive label — equivalent to the <code>aria-label</code> you would add to an unlabelled <code>&lt;nav&gt;</code> or <code>&lt;section&gt;</code> on web. This is especially important for toolbars, tab bars, and sidebar panels.</li>
+              <li><strong>Hide purely structural or decorative container views with <code>.accessibilityHidden(true)</code>.</strong> Layout wrappers that exist only for visual spacing — equivalent to unsemantic <code>&lt;div&gt;</code>s on web — should be hidden from the accessibility tree. Expose only the meaningful content and its labelled groupings, keeping the VoiceOver reading order clean and predictable.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import SwiftUI
+
+struct ArticlePageView: View {
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 24) {
+
+                // Page title — equivalent to &lt;h1&gt;
+                Text("Getting Started")
+                    .font(.largeTitle.bold())
+                    .accessibilityAddTraits(.isHeader)
+                    .accessibilityLabel("Getting Started — page title")
+
+                // Named section — equivalent to &lt;section aria-labelledby&gt;
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Overview")
+                        .font(.title2.bold())
+                        .accessibilityAddTraits(.isHeader)
+
+                    Text("This section introduces the core concepts you need before continuing.")
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .accessibilityElement(children: .contain)
+
+                // Complementary aside — equivalent to &lt;aside&gt;
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Related Articles")
+                        .font(.headline)
+                        .accessibilityAddTraits(.isHeader)
+
+                    Text("Advanced configuration")
+                    Text("Troubleshooting guide")
+                }
+                .accessibilityElement(children: .contain)
+                .accessibilityLabel("Related Articles")
+            }
+            .padding()
+        }
+    }
+}</code></pre>
+            </div>
+          </section>
+          <section aria-labelledby="dev-android-heading">
+            <h2 id="dev-android-heading">Dev guidelines for Android</h2>
+            <ul>
+              <li><strong>Use <code>Modifier.semantics(mergeDescendants = true) {}</code> on landmark-equivalent containers.</strong> Jetpack Compose has no built-in landmark roles. Grouping related content under <code>mergeDescendants = true</code> collapses children into a single focusable node for TalkBack — equivalent to an atomic unit. For sections that should keep children individually focusable (like a <code>&lt;section&gt;</code> with multiple interactive elements), use a plain <code>Modifier.semantics {}</code> block without merging.</li>
+              <li><strong>Mark section headings with <code>heading()</code> inside a <code>semantics</code> block.</strong> TalkBack users can navigate by headings using the reading controls. Any <code>Text</code> composable acting as a page or section title must call <code>heading()</code> so it appears in the heading navigation list. Maintain a logical hierarchy — do not skip heading levels.</li>
+              <li><strong>Set <code>contentDescription</code> on unnamed structural containers.</strong> When a grouping composable has no visible heading, assign a <code>contentDescription</code> in its <code>semantics</code> block — equivalent to <code>aria-label</code> on an unlabelled <code>&lt;nav&gt;</code> or <code>&lt;section&gt;</code>. This is critical for navigation bars, drawers, and any region a user might want to jump to directly.</li>
+              <li><strong>Use <code>Modifier.clearAndSetSemantics {}</code> to remove decorative structural wrappers from the accessibility tree.</strong> Layout-only composables that exist purely for visual arrangement should not pollute the TalkBack reading order. <code>clearAndSetSemantics</code> removes all descendant semantics and lets you replace them with only what is meaningful — equivalent to hiding unsemantic <code>&lt;div&gt;</code> wrappers on web.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.*
+import androidx.compose.ui.unit.dp
+
+@Composable
+fun ArticlePageScreen() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
+        // Page title — equivalent to &lt;h1&gt;
+        Text(
+            text = "Getting Started",
+            style = MaterialTheme.typography.headlineLarge,
+            modifier = Modifier.semantics { heading() }
+        )
+
+        // Named section — equivalent to &lt;section aria-labelledby&gt;
+        Column(
+            modifier = Modifier.semantics(mergeDescendants = false) {
+                contentDescription = "Overview section"
+            },
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = "Overview",
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.semantics { heading() }
+            )
+            Text("This section introduces the core concepts you need before continuing.")
+        }
+
+        // Complementary aside — equivalent to &lt;aside&gt;
+        Column(
+            modifier = Modifier.semantics(mergeDescendants = false) {
+                contentDescription = "Related Articles"
+            },
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Text(
+                text = "Related Articles",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.semantics { heading() }
+            )
+            Text("Advanced configuration")
+            Text("Troubleshooting guide")
+        }
+    }
+}</code></pre>
+            </div>
+          </section>
           <section aria-labelledby="further-reading-heading">
             <h2 id="further-reading-heading">Further reading</h2>
             <ul>

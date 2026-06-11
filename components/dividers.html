@@ -226,6 +226,107 @@
               </div>
             </div>
 </section>
+          <section aria-labelledby="dev-ios-heading">
+            <h2 id="dev-ios-heading">Dev guidelines for iOS</h2>
+            <ul>
+              <li>Decorative dividers rendered as plain <code>Rectangle</code> or <code>Divider</code> views must have <code>.accessibilityHidden(true)</code> applied so VoiceOver skips them entirely — they carry no meaning for screen reader users.</li>
+              <li>Never rely on a visual divider to communicate section structure; use <code>.accessibilityAddTraits(.isHeader)</code> on the heading view above the content group so VoiceOver users can navigate by headings.</li>
+              <li>When a <code>Divider</code> sits inside a container that groups related content, apply <code>.accessibilityElement(children: .contain)</code> on the container so VoiceOver navigates each child independently rather than merging them across the visual boundary.</li>
+              <li>Vertical separators in toolbars or segmented controls that are purely decorative should also carry <code>.accessibilityHidden(true)</code>; any interactive element they visually separate should have its own <code>.accessibilityLabel</code> that makes the grouping clear without reference to the divider.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import SwiftUI
+
+struct ArticleSectionList: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text("Published articles")
+                .font(.headline)
+                .accessibilityAddTraits(.isHeader)
+            Text("3 articles are live and visible to readers.")
+                .font(.subheadline)
+                .padding(.bottom, 12)
+
+            // Semantic divider — hidden from VoiceOver
+            Divider()
+                .accessibilityHidden(true)
+                .padding(.vertical, 8)
+
+            Text("Draft articles")
+                .font(.headline)
+                .accessibilityAddTraits(.isHeader)
+            Text("2 drafts are saved but not yet published.")
+                .font(.subheadline)
+                .padding(.bottom, 12)
+
+            // Decorative gradient rule — hidden from VoiceOver
+            Rectangle()
+                .fill(
+                    LinearGradient(
+                        colors: [Color.blue, Color.clear],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+                .frame(height: 2)
+                .accessibilityHidden(true)
+        }
+        .padding()
+    }
+}</code></pre>
+            </div>
+          </section>
+          <section aria-labelledby="dev-android-heading">
+            <h2 id="dev-android-heading">Dev guidelines for Android</h2>
+            <ul>
+              <li>Decorative <code>HorizontalDivider</code> and <code>VerticalDivider</code> composables are not focusable by default, but if wrapped in a container that merges semantics, use <code>Modifier.semantics { invisibleToUser() }</code> or <code>Modifier.clearAndSetSemantics {}</code> to ensure TalkBack never announces them.</li>
+              <li>Do not use a divider to imply section structure that assistive technology cannot perceive; mark the heading above each content group with <code>Modifier.semantics { heading() }</code> so TalkBack users can navigate by swipe-by-heading.</li>
+              <li>When a divider sits inside a parent container, ensure the container does not use <code>mergeDescendants = true</code> across the divider boundary — merging content from both sides of a separator into a single focusable node produces a confusing, combined announcement.</li>
+              <li>Vertical separators in toolbars or tab bars that are purely decorative should be wrapped in a <code>Box</code> with <code>Modifier.semantics(mergeDescendants = false) {}</code> so they remain invisible to TalkBack without suppressing the semantics of adjacent interactive elements.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.*
+import androidx.compose.ui.unit.dp
+
+@Composable
+fun ArticleSectionList() {
+    Column(modifier = Modifier.padding(16.dp)) {
+        Text(
+            text = "Published articles",
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.semantics { heading() }
+        )
+        Text(
+            text = "3 articles are live and visible to readers.",
+            style = MaterialTheme.typography.bodyMedium
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Decorative divider — cleared of semantics so TalkBack skips it
+        HorizontalDivider(
+            modifier = Modifier.clearAndSetSemantics {}
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+        Text(
+            text = "Draft articles",
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.semantics { heading() }
+        )
+        Text(
+            text = "2 drafts are saved but not yet published.",
+            style = MaterialTheme.typography.bodyMedium
+        )
+    }
+}</code></pre>
+            </div>
+          </section>
           <section aria-labelledby="further-reading-heading">
             <h2 id="further-reading-heading">Further reading</h2>
             <ul>

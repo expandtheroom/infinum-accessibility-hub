@@ -226,6 +226,122 @@
               </div>
             </div>
 </section>
+          <section aria-labelledby="dev-ios-heading">
+            <h2 id="dev-ios-heading">Dev guidelines for iOS</h2>
+            <ul>
+              <li>Use <code>UIAccessibility.post(notification: .announcement, argument: "...")</code> to announce dynamic notifications to VoiceOver — this is the iOS equivalent of an ARIA live region. For errors, post immediately; for confirmations, post after the triggering action completes.</li>
+              <li>Apply <code>.accessibilityAddTraits(.updatesFrequently)</code> to persistent status regions (e.g. a banner that refreshes its message) so VoiceOver knows the content changes over time.</li>
+              <li>Mark decorative severity icons with <code>.accessibilityHidden(true)</code> when the severity type (e.g. "Error:") is already present in the visible label text, to prevent double-announcement.</li>
+              <li>For dismissible notifications, provide an <code>.accessibilityLabel("Dismiss notification")</code> on the close button and return focus to a meaningful element after dismissal using <code>UIAccessibility.post(notification: .screenChanged, argument: targetView)</code>.</li>
+              <li>Use <code>.accessibilityElement(children: .combine)</code> on the notification container to merge the icon, title, and message into a single focusable unit for VoiceOver, so users hear the full message in one swipe.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import SwiftUI
+
+struct AccessibleNotificationBanner: View {
+    let severity: String   // "Error", "Success", "Warning", "Info"
+    let message: String
+    var onDismiss: () -&gt; Void
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: iconName)
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(severity)
+                    .fontWeight(.bold)
+                Text(message)
+            }
+            Spacer()
+            Button(action: onDismiss) {
+                Image(systemName: "xmark")
+            }
+            .accessibilityLabel("Dismiss notification")
+        }
+        .padding()
+        .accessibilityElement(children: .combine)
+        .onAppear {
+            UIAccessibility.post(
+                notification: .announcement,
+                argument: "\(severity): \(message)"
+            )
+        }
+    }
+
+    private var iconName: String {
+        switch severity {
+        case "Error":   return "exclamationmark.circle.fill"
+        case "Success": return "checkmark.circle.fill"
+        case "Warning": return "exclamationmark.triangle.fill"
+        default:        return "info.circle.fill"
+        }
+    }
+}</code></pre>
+            </div>
+          </section>
+          <section aria-labelledby="dev-android-heading">
+            <h2 id="dev-android-heading">Dev guidelines for Android</h2>
+            <ul>
+              <li>Use <code>Modifier.semantics { liveRegion = LiveRegionMode.Polite }</code> for confirmations and informational updates, and <code>LiveRegionMode.Assertive</code> only for critical errors — this mirrors the ARIA <code>polite</code> / <code>assertive</code> distinction and controls how TalkBack interrupts the user.</li>
+              <li>Use <code>Modifier.semantics { contentDescription = "..." }</code> on the notification container to provide a single, combined announcement that includes severity and message (e.g. "Error: Failed to save changes") rather than letting TalkBack read child elements separately.</li>
+              <li>Apply <code>Modifier.clearAndSetSemantics { }</code> to decorative severity icons to suppress their announcement when the severity type is already present in the content description.</li>
+              <li>For dismissible notifications, add a <code>Modifier.semantics { role = Role.Button; contentDescription = "Dismiss notification" }</code> to the close control, and use <code>ExperimentalComposeUiApi</code> focus requesters to return focus to a meaningful element after dismissal.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.semantics.*
+
+enum class NotificationSeverity { ERROR, SUCCESS, WARNING, INFO }
+
+@Composable
+fun AccessibleNotificationBanner(
+    severity: NotificationSeverity,
+    message: String,
+    onDismiss: () -&gt; Unit
+) {
+    val severityLabel = severity.name.lowercase().replaceFirstChar { it.uppercase() }
+    val combinedDescription = "$severityLabel: $message"
+    val liveRegionMode = if (severity == NotificationSeverity.ERROR) {
+        LiveRegionMode.Assertive
+    } else {
+        LiveRegionMode.Polite
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(12.dp)
+            .semantics(mergeDescendants = true) {
+                contentDescription = combinedDescription
+                liveRegion = liveRegionMode
+            }
+    ) {
+        Icon(
+            imageVector = severityIcon(severity),
+            contentDescription = null,
+            modifier = Modifier.clearAndSetSemantics { }
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(text = severityLabel, fontWeight = FontWeight.Bold)
+            Text(text = message)
+        }
+        IconButton(
+            onClick = onDismiss,
+            modifier = Modifier.semantics {
+                role = Role.Button
+                contentDescription = "Dismiss notification"
+            }
+        ) {
+            Icon(Icons.Default.Close, contentDescription = null)
+        }
+    }
+}</code></pre>
+            </div>
+          </section>
           <section aria-labelledby="further-reading-heading">
             <h2 id="further-reading-heading">Further reading</h2>
             <ul>

@@ -239,6 +239,127 @@
               </div>
             </div>
 </section>
+          <section aria-labelledby="dev-ios-heading">
+            <h2 id="dev-ios-heading">Dev guidelines for iOS</h2>
+            <ul>
+              <li>Present the modal using <code>sheet</code>, <code>fullScreenCover</code>, or <code>UIModalPresentationStyle</code> — VoiceOver automatically restricts focus to the presented view, equivalent to a focus trap. Do not build custom overlay views unless you replicate this behaviour manually.</li>
+              <li>Give the modal a clear accessible name using <code>.accessibilityLabel("...")</code> on the container, or ensure the visible heading is the first element VoiceOver reads so users immediately understand the dialog's purpose.</li>
+              <li>Mark the close button with <code>.accessibilityLabel("Close dialog")</code> and <code>.accessibilityAddTraits(.isButton)</code> if it uses an icon only (e.g. × or ✕), so VoiceOver announces a meaningful action rather than the raw glyph.</li>
+              <li>When the modal closes, call <code>UIAccessibility.post(notification: .screenChanged, argument: triggerView)</code> to move VoiceOver focus back to the element that opened the dialog, matching the web pattern of returning focus to the trigger.</li>
+              <li>Hide the dimmed backdrop from VoiceOver with <code>.accessibilityHidden(true)</code> so it is not announced as a tappable element — it should be visually present but invisible to assistive technology.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import SwiftUI
+
+struct DeleteConfirmationModal: View {
+    @Binding var isPresented: Bool
+    let onConfirm: () -&gt; Void
+
+    var body: some View {
+        VStack(spacing: 16) {
+            Text("Confirm deletion")
+                .font(.headline)
+                .accessibilityAddTraits(.isHeader)
+
+            Text("This action cannot be undone. The item will be permanently deleted.")
+                .font(.body)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+
+            HStack(spacing: 12) {
+                Button(role: .destructive) {
+                    onConfirm()
+                    isPresented = false
+                } label: {
+                    Text("Delete permanently")
+                        .frame(maxWidth: .infinity)
+                }
+                .accessibilityLabel("Delete permanently")
+                .accessibilityHint("Permanently removes the item. This cannot be undone.")
+
+                Button("Cancel") {
+                    isPresented = false
+                }
+                .accessibilityLabel("Cancel")
+                .accessibilityHint("Dismisses the dialog without deleting")
+                .frame(maxWidth: .infinity)
+            }
+        }
+        .padding()
+        .presentationDetents([.medium])
+    }
+}
+
+struct ContentView: View {
+    @State private var showModal = false
+
+    var body: some View {
+        Button("Open dialog") { showModal = true }
+            .sheet(isPresented: $showModal) {
+                DeleteConfirmationModal(isPresented: $showModal) {
+                    // perform delete
+                }
+            }
+    }
+}</code></pre>
+            </div>
+          </section>
+          <section aria-labelledby="dev-android-heading">
+            <h2 id="dev-android-heading">Dev guidelines for Android</h2>
+            <ul>
+              <li>Use <code>AlertDialog</code> or <code>BasicAlertDialog</code> from Material3 — these components confine TalkBack focus to the dialog content automatically, equivalent to a focus trap. Avoid building overlays from plain <code>Box</code> or <code>Popup</code> unless you manage focus explicitly.</li>
+              <li>Apply <code>Modifier.semantics { heading() }</code> to the dialog title so TalkBack announces it as a heading, giving users an immediate summary of the dialog's purpose when it opens.</li>
+              <li>Use <code>Modifier.semantics { contentDescription = "Close dialog" }</code> on icon-only close buttons so TalkBack reads a meaningful label rather than announcing the icon resource name.</li>
+              <li>After dismissing the dialog, call <code>focusRequester.requestFocus()</code> on the element that originally triggered it, ensuring TalkBack returns to the correct position in the layout rather than landing unpredictably.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.*
+
+@Composable
+fun DeleteConfirmationDialog(
+    onConfirm: () -&gt; Unit,
+    onDismiss: () -&gt; Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text(
+                text = "Confirm deletion",
+                modifier = Modifier.semantics { heading() }
+            )
+        },
+        text = {
+            Text("This action cannot be undone. The item will be permanently deleted.")
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { onConfirm(); onDismiss() },
+                modifier = Modifier.semantics {
+                    contentDescription = "Delete permanently. This cannot be undone."
+                }
+            ) {
+                Text("Delete permanently")
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = onDismiss,
+                modifier = Modifier.semantics {
+                    contentDescription = "Cancel, close dialog"
+                }
+            ) {
+                Text("Cancel")
+            }
+        }
+    )
+}</code></pre>
+            </div>
+          </section>
           <section aria-labelledby="further-reading-heading">
             <h2 id="further-reading-heading">Further reading</h2>
             <ul>

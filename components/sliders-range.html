@@ -231,6 +231,113 @@
             </div>
 </section>
 
+          <section aria-labelledby="dev-ios-heading">
+            <h2 id="dev-ios-heading">Dev guidelines for iOS</h2>
+            <ul>
+              <li><strong>Use <code>Slider</code> with an explicit <code>.accessibilityLabel("...")</code></strong> — SwiftUI's native <code>Slider</code> announces the control name and current value via VoiceOver automatically, but you must provide a clear label (e.g. <code>"Volume"</code>) rather than relying on proximity to a <code>Text</code> view, which VoiceOver may not associate correctly.</li>
+              <li><strong>Provide a human-readable <code>.accessibilityValue("...")</code></strong> when the raw numeric value alone is not meaningful — for example, announce <code>"50 percent"</code> rather than just <code>"50"</code>, or <code>"Low"</code> for a low-quality setting. Update this value as the user drags so VoiceOver reads the current position continuously.</li>
+              <li><strong>Add an <code>.accessibilityHint("...")</code> to describe what the slider controls</strong> — for example, <code>"Adjusts the playback volume"</code>. Keep it brief and action-oriented so it supplements rather than duplicates the label.</li>
+              <li><strong>For dual-thumb range sliders built from custom views</strong>, use <code>.accessibilityElement(children: .contain)</code> on the container so each thumb remains a separately focusable element, then apply distinct labels — e.g. <code>"Minimum price"</code> and <code>"Maximum price"</code> — and keep each thumb's <code>accessibilityValue</code> in sync with its bound as the user adjusts.</li>
+              <li><strong>Post a <code>UIAccessibility.post(notification: .announcement, argument: "...")</code></strong> when the slider reaches a boundary (minimum or maximum) so VoiceOver informs users they cannot go further — e.g. <code>"Minimum reached"</code> or <code>"Maximum reached"</code>.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import SwiftUI
+
+struct VolumeSliderView: View {
+    @State private var volume: Double = 50
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("Volume")
+                    .font(.headline)
+                Spacer()
+                Text("\(Int(volume))%")
+                    .foregroundColor(.secondary)
+            }
+            Slider(value: $volume, in: 0...100, step: 1)
+                .accessibilityLabel("Volume")
+                .accessibilityValue("\(Int(volume)) percent")
+                .accessibilityHint("Adjusts the playback volume")
+                .onChange(of: volume) { newValue in
+                    if newValue == 0 {
+                        UIAccessibility.post(
+                            notification: .announcement,
+                            argument: "Minimum reached"
+                        )
+                    } else if newValue == 100 {
+                        UIAccessibility.post(
+                            notification: .announcement,
+                            argument: "Maximum reached"
+                        )
+                    }
+                }
+            HStack {
+                Text("0%").font(.caption).foregroundColor(.secondary)
+                Spacer()
+                Text("100%").font(.caption).foregroundColor(.secondary)
+            }
+        }
+        .padding()
+    }
+}</code></pre>
+            </div>
+          </section>
+          <section aria-labelledby="dev-android-heading">
+            <h2 id="dev-android-heading">Dev guidelines for Android</h2>
+            <ul>
+              <li><strong>Use <code>Slider</code> or <code>RangeSlider</code> from Material 3</strong> and set <code>Modifier.semantics { contentDescription = "..." }</code> on the composable to give TalkBack a clear control name — e.g. <code>"Volume slider"</code>. The default announcement from Material components may be insufficient on its own.</li>
+              <li><strong>Set <code>stateDescription</code> in the semantics block to announce the current value in human-readable form</strong> — for example <code>stateDescription = "${value.toInt()} percent"</code> rather than the raw float. Update this as the value changes so TalkBack reads the live position during dragging.</li>
+              <li><strong>For dual-thumb range sliders, ensure each thumb has a distinct <code>contentDescription</code></strong> — e.g. <code>"Minimum price, ${minValue.toInt()} dollars"</code> and <code>"Maximum price, ${maxValue.toInt()} dollars"</code>. Avoid <code>mergeDescendants = true</code> on the container, which would collapse both thumbs into a single focus target and prevent independent adjustment.</li>
+              <li><strong>Announce boundary conditions using <code>LiveRegionMode.Polite</code></strong> — when the slider reaches its minimum or maximum, update a semantics node with <code>liveRegion = LiveRegionMode.Polite</code> so TalkBack announces the boundary without interrupting ongoing speech.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import androidx.compose.material3.Slider
+import androidx.compose.material3.Text
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.*
+
+@Composable
+fun VolumeSlider() {
+    var volume by remember { mutableStateOf(50f) }
+    val boundaryMessage = when {
+        volume == 0f -&gt; "Minimum reached"
+        volume == 100f -&gt; "Maximum reached"
+        else -&gt; ""
+    }
+
+    Column {
+        Row(horizontalArrangement = Arrangement.SpaceBetween) {
+            Text("Volume", style = MaterialTheme.typography.titleSmall)
+            Text("${volume.toInt()}%", style = MaterialTheme.typography.bodySmall)
+        }
+        Slider(
+            value = volume,
+            onValueChange = { volume = it },
+            valueRange = 0f..100f,
+            steps = 0,
+            modifier = Modifier.semantics {
+                contentDescription = "Volume slider"
+                stateDescription = "${volume.toInt()} percent"
+            }
+        )
+        if (boundaryMessage.isNotEmpty()) {
+            Text(
+                text = boundaryMessage,
+                modifier = Modifier.semantics {
+                    liveRegion = LiveRegionMode.Polite
+                },
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+    }
+}
+</code></pre>
+            </div>
+          </section>
           <section aria-labelledby="further-reading-heading">
             <h2 id="further-reading-heading">Further reading</h2>
             <ul>

@@ -225,6 +225,116 @@
               </div>
             </div>
 </section>
+          <section aria-labelledby="dev-ios-heading">
+            <h2 id="dev-ios-heading">Dev guidelines for iOS</h2>
+            <ul>
+              <li>Use <code>.accessibilityElement(children: .combine)</code> on the stat card container so VoiceOver announces the label and value as a single, unified element — preventing users from having to navigate each piece separately.</li>
+              <li>Set <code>.accessibilityLabel("Monthly active users: 24,310")</code> on the combined element to give VoiceOver a complete, meaningful announcement that includes both the metric name and its value with unit.</li>
+              <li>For trend indicators, include direction and magnitude in the accessibility label — e.g. <code>.accessibilityLabel("Monthly active users: 24,310, up 12 percent from last month")</code> — never rely on the arrow glyph alone.</li>
+              <li>For live-updating stat values, post a VoiceOver announcement using <code>UIAccessibility.post(notification: .announcement, argument: "Active users updated: 24,310")</code>, throttled to no more than once per second to avoid overloading the user.</li>
+              <li>Mark decorative sparklines or trend chart images with <code>.accessibilityHidden(true)</code> so VoiceOver skips them — their meaning must already be conveyed in the card's combined accessibility label.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import SwiftUI
+
+struct StatCard: View {
+    let label: String
+    let value: String
+    let trend: String?
+
+    private var accessibilityText: String {
+        if let trend = trend {
+            return "\(label): \(value), \(trend)"
+        }
+        return "\(label): \(value)"
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(label)
+                .font(.caption)
+                .foregroundColor(.secondary)
+            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                Text(value)
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                if let trend = trend {
+                    Text(trend)
+                        .font(.caption)
+                        .foregroundColor(.green)
+                }
+            }
+        }
+        .padding()
+        .background(Color(.secondarySystemBackground))
+        .cornerRadius(8)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(accessibilityText)
+    }
+}</code></pre>
+            </div>
+          </section>
+          <section aria-labelledby="dev-android-heading">
+            <h2 id="dev-android-heading">Dev guidelines for Android</h2>
+            <ul>
+              <li>Apply <code>mergeDescendants = true</code> inside <code>Modifier.semantics</code> on the stat card container so TalkBack reads the label and value as a single focusable unit rather than announcing each text element separately.</li>
+              <li>Use <code>contentDescription = "Monthly active users: 24,310"</code> in the merged semantics block to provide a complete, unambiguous announcement that includes the metric name, value, and unit.</li>
+              <li>Include trend direction and magnitude in the <code>contentDescription</code> — e.g. <code>"Monthly active users: 24,310, up 12 percent from last month"</code> — never rely on arrow glyphs or color alone.</li>
+              <li>For real-time stat values, set <code>liveRegion = LiveRegionMode.Polite</code> on the value's semantics so TalkBack announces updates without interrupting the user; throttle state updates to no more than once per second.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.*
+import androidx.compose.ui.unit.dp
+
+@Composable
+fun StatCard(
+    label: String,
+    value: String,
+    trend: String? = null
+) {
+    val description = if (trend != null) "$label: $value, $trend" else "$label: $value"
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .semantics(mergeDescendants = true) {
+                contentDescription = description
+            }
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Row(
+                verticalAlignment = Alignment.Bottom,
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                Text(
+                    text = value,
+                    style = MaterialTheme.typography.headlineLarge
+                )
+                if (trend != null) {
+                    Text(
+                        text = trend,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+        }
+    }
+}</code></pre>
+            </div>
+          </section>
           <section aria-labelledby="further-reading-heading">
             <h2 id="further-reading-heading">Further reading</h2>
             <ul>

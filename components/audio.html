@@ -231,6 +231,122 @@
             </div>
 </section>
 
+          <section aria-labelledby="dev-ios-heading">
+            <h2 id="dev-ios-heading">Dev guidelines for iOS</h2>
+            <ul>
+              <li><strong>Apply <code>.accessibilityLabel("...")</code> to custom player controls.</strong> If you build custom play/pause, seek, or volume buttons, give each a descriptive label so VoiceOver announces the control's purpose rather than relying on an icon alone.</li>
+              <li><strong>Add <code>.accessibilityAddTraits(.startsMediaSession)</code> to the play button.</strong> This trait tells VoiceOver to pause its own speech when the user activates the control, preventing the assistant's audio from overlapping with the media audio.</li>
+              <li><strong>Use <code>.accessibilityValue("...")</code> to expose playback state.</strong> Report the current playback position and duration (e.g. <code>"1 minute 30 seconds of 10 minutes"</code>) so screen reader users know where they are in the track without having to stop and inspect.</li>
+              <li><strong>Post a <code>UIAccessibility.announcement</code> notification when playback state changes.</strong> Announce events such as "Playing", "Paused", or "Audio ended" so VoiceOver users receive feedback that their action succeeded, especially when controls are not in focus.</li>
+              <li><strong>Apply <code>.accessibilityIgnoresInvertColors()</code> to any waveform or album art image.</strong> Prevents Smart Invert from inverting media visuals while still inverting the rest of the UI.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import SwiftUI
+import AVFoundation
+
+struct AudioPlayerView: View {
+    @StateObject private var player = AudioPlayerModel()
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Podcast Episode 1: Introduction to Accessibility")
+                .font(.headline)
+
+            HStack(spacing: 24) {
+                Button(action: { player.togglePlayback() }) {
+                    Image(systemName: player.isPlaying ? "pause.fill" : "play.fill")
+                        .font(.title)
+                }
+                .accessibilityLabel(player.isPlaying ? "Pause" : "Play")
+                .accessibilityAddTraits(.startsMediaSession)
+
+                Slider(value: $player.progress, in: 0...1)
+                    .accessibilityLabel("Seek")
+                    .accessibilityValue(player.progressDescription)
+            }
+
+            Text(player.progressDescription)
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .accessibilityHidden(true)
+        }
+        .padding()
+        .onChange(of: player.isPlaying) { isPlaying in
+            UIAccessibility.post(
+                notification: .announcement,
+                argument: isPlaying ? "Playing" : "Paused"
+            )
+        }
+    }
+}</code></pre>
+            </div>
+          </section>
+          <section aria-labelledby="dev-android-heading">
+            <h2 id="dev-android-heading">Dev guidelines for Android</h2>
+            <ul>
+              <li><strong>Set <code>contentDescription</code> on custom player controls.</strong> Icon-only buttons (play, pause, seek) must have a <code>Modifier.semantics { contentDescription = "..." }</code> override so TalkBack announces the action rather than a generic icon description.</li>
+              <li><strong>Assign <code>Role.Button</code> to all interactive controls.</strong> Use <code>Modifier.semantics { role = Role.Button }</code> on play, pause, and skip controls so TalkBack presents them with the correct interaction hint ("double-tap to activate").</li>
+              <li><strong>Use <code>stateDescription</code> to report playback position.</strong> Populate <code>Modifier.semantics { stateDescription = "1 minute 30 seconds of 10 minutes" }</code> on the seek bar so users know their current position in the track.</li>
+              <li><strong>Use <code>LiveRegionMode.Polite</code> for status announcements.</strong> Wrap the playback status text in a composable with <code>Modifier.semantics { liveRegion = LiveRegionMode.Polite }</code> so TalkBack reads out "Playing" or "Paused" when the state changes without interrupting the user.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.*
+import androidx.compose.ui.unit.dp
+
+@Composable
+fun AudioPlayerCard(
+    title: String,
+    isPlaying: Boolean,
+    progressDescription: String,
+    progress: Float,
+    onTogglePlayback: () -&gt; Unit,
+    onSeek: (Float) -&gt; Unit
+) {
+    Column(modifier = Modifier.padding(16.dp)) {
+        Text(text = title, style = MaterialTheme.typography.titleMedium)
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        IconButton(
+            onClick = onTogglePlayback,
+            modifier = Modifier.semantics {
+                contentDescription = if (isPlaying) "Pause" else "Play"
+                role = Role.Button
+            }
+        ) {
+            Icon(
+                imageVector = if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                contentDescription = null
+            )
+        }
+
+        Slider(
+            value = progress,
+            onValueChange = onSeek,
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics {
+                    contentDescription = "Seek"
+                    stateDescription = progressDescription
+                }
+        )
+
+        Text(
+            text = progressDescription,
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }
+        )
+    }
+}</code></pre>
+            </div>
+          </section>
           <section aria-labelledby="further-reading-heading">
             <h2 id="further-reading-heading">Further reading</h2>
             <ul>

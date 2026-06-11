@@ -250,6 +250,118 @@
               </div>
             </div>
 </section>
+          <section aria-labelledby="dev-ios-heading">
+            <h2 id="dev-ios-heading">Dev guidelines for iOS</h2>
+            <ul>
+              <li>Use <code>.accessibilityElement(children: .contain)</code> on the mega menu panel container so VoiceOver can navigate into individual links and headings within the panel, rather than collapsing them into a single element.</li>
+              <li>Apply <code>.accessibilityAddTraits(.isButton)</code> and <code>.accessibilityHint("Opens navigation panel")</code> to the top-level trigger item so VoiceOver users understand the tap will reveal a submenu rather than navigate away.</li>
+              <li>Use <code>UIAccessibility.post(notification: .screenChanged, argument: firstPanelItem)</code> when the panel opens to move VoiceOver focus to the first item inside the panel, mirroring the keyboard focus management required on web.</li>
+              <li>Mark column headings inside the panel with <code>.accessibilityAddTraits(.isHeader)</code> so VoiceOver users can jump between sections using the rotor's Headings setting.</li>
+              <li>When the panel closes, post <code>UIAccessibility.post(notification: .screenChanged, argument: triggerButton)</code> to return VoiceOver focus to the trigger that opened it — preventing focus from being lost in an unexpected location.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>struct MegaMenuView: View {
+    @State private var isPanelOpen = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Button(action: togglePanel) {
+                HStack {
+                    Text("Products")
+                    Image(systemName: isPanelOpen ? "chevron.up" : "chevron.down")
+                        .accessibilityHidden(true)
+                }
+            }
+            .accessibilityAddTraits(.isButton)
+            .accessibilityHint(isPanelOpen ? "Closes navigation panel" : "Opens navigation panel")
+
+            if isPanelOpen {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Product Categories")
+                        .font(.headline)
+                        .accessibilityAddTraits(.isHeader)
+
+                    ForEach(productLinks, id: \.id) { link in
+                        Link(link.title, destination: link.url)
+                    }
+                }
+                .accessibilityElement(children: .contain)
+                .padding()
+                .background(Color(.systemBackground))
+                .shadow(radius: 4)
+            }
+        }
+    }
+
+    private func togglePanel() {
+        isPanelOpen.toggle()
+    }
+}</code></pre>
+            </div>
+          </section>
+          <section aria-labelledby="dev-android-heading">
+            <h2 id="dev-android-heading">Dev guidelines for Android</h2>
+            <ul>
+              <li>Apply <code>Modifier.semantics { role = Role.Button; contentDescription = "Products, opens navigation panel" }</code> to the top-level trigger so TalkBack announces both the label and the expected outcome of tapping.</li>
+              <li>Use <code>mergeDescendants = true</code> on the trigger row only — do not apply it to the panel container itself, so TalkBack can reach individual links and section headings inside the panel.</li>
+              <li>Mark section headings inside the panel with <code>Modifier.semantics { heading() }</code> so TalkBack users can navigate between panel sections using the Headings reading control.</li>
+              <li>When the panel opens, use <code>LaunchedEffect</code> with <code>FocusRequester</code> to move accessibility focus to the first item in the panel, and restore focus to the trigger when it closes.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>@Composable
+fun MegaMenu(productLinks: List&lt;NavLink&gt;) {
+    var isPanelOpen by remember { mutableStateOf(false) }
+    val firstItemFocus = remember { FocusRequester() }
+
+    Column {
+        Row(
+            modifier = Modifier
+                .clickable { isPanelOpen = !isPanelOpen }
+                .semantics {
+                    role = Role.Button
+                    contentDescription = if (isPanelOpen)
+                        "Products, closes navigation panel"
+                    else
+                        "Products, opens navigation panel"
+                }
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text("Products", style = MaterialTheme.typography.titleMedium)
+            Icon(
+                imageVector = if (isPanelOpen) Icons.Default.ExpandLess
+                              else Icons.Default.ExpandMore,
+                contentDescription = null
+            )
+        }
+
+        if (isPanelOpen) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = "Product Categories",
+                    style = MaterialTheme.typography.titleSmall,
+                    modifier = Modifier.semantics { heading() }
+                )
+                productLinks.forEachIndexed { index, link -&gt;
+                    val modifier = if (index == 0)
+                        Modifier.focusRequester(firstItemFocus) else Modifier
+                    Text(
+                        text = link.title,
+                        modifier = modifier
+                            .clickable { /* navigate */ }
+                            .semantics { role = Role.Button }
+                            .padding(vertical = 8.dp)
+                    )
+                }
+            }
+            LaunchedEffect(Unit) { firstItemFocus.requestFocus() }
+        }
+    }
+}</code></pre>
+            </div>
+          </section>
           <section aria-labelledby="further-reading-heading">
             <h2 id="further-reading-heading">Further reading</h2>
             <ul>

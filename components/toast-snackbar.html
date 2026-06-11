@@ -238,6 +238,110 @@
               </div>
             </div>
 </section>
+          <section aria-labelledby="dev-ios-heading">
+            <h2 id="dev-ios-heading">Dev guidelines for iOS</h2>
+            <ul>
+              <li>Post a VoiceOver announcement immediately after the toast appears using <code>UIAccessibility.post(notification: .announcement, argument: "Success: Changes saved.")</code>. This is the iOS equivalent of an ARIA live region — the message is spoken without moving focus.</li>
+              <li>For error toasts that are more urgent, pass <code>notification: .announcement</code> and set the speech priority to <code>.high</code> via the <code>UIAccessibilityAnnouncementKey.priority</code> user info key so VoiceOver interrupts the current speech, matching the behaviour of <code>aria-live="assertive"</code>.</li>
+              <li>Mark the dismiss button with <code>.accessibilityLabel("Dismiss notification")</code> and <code>.accessibilityAddTraits(.isButton)</code>. After dismissal, restore focus to the element the user was previously interacting with using <code>UIAccessibility.post(notification: .layoutChanged, argument: previouslyFocusedElement)</code>.</li>
+              <li>If the toast contains an action (e.g. "Undo"), add it as an <code>accessibilityCustomAction</code> on the toast container so VoiceOver users can reach it without navigating away from the current context. Keep the toast visible long enough for a switch-access user to activate it.</li>
+              <li>Apply <code>.accessibilityHidden(true)</code> to the decorative icon inside the toast so VoiceOver does not read redundant content — the severity must already be conveyed in the announcement text itself.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import SwiftUI
+
+struct ToastView: View {
+    let message: String
+    let isError: Bool
+    var onDismiss: () -&gt; Void
+    var onUndo: (() -&gt; Void)?
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: isError ? "exclamationmark.triangle" : "checkmark.circle")
+                .accessibilityHidden(true)
+            Text(message)
+                .font(.subheadline)
+            Spacer()
+            Button(action: onDismiss) {
+                Image(systemName: "xmark")
+            }
+            .accessibilityLabel("Dismiss notification")
+        }
+        .padding()
+        .background(isError ? Color.red.opacity(0.15) : Color.green.opacity(0.15))
+        .cornerRadius(8)
+        .accessibilityElement(children: .combine)
+        .accessibilityCustomActions(onUndo.map { action in
+            [AccessibilityCustomAction(name: "Undo") { _ in action(); return true }]
+        } ?? [])
+        .onAppear {
+            let priority: [AnyHashable: Any] = [
+                UIAccessibility.AnnouncementStringKey: message,
+                UIAccessibilityAnnouncementNotificationName: isError ? "high" : "default"
+            ]
+            UIAccessibility.post(notification: .announcement, argument: message)
+        }
+    }
+}</code></pre>
+            </div>
+          </section>
+          <section aria-labelledby="dev-android-heading">
+            <h2 id="dev-android-heading">Dev guidelines for Android</h2>
+            <ul>
+              <li>Set <code>LiveRegionMode.Polite</code> on the toast container so TalkBack announces the message without interrupting current speech: <code>Modifier.semantics { liveRegion = LiveRegionMode.Polite }</code>. Use <code>LiveRegionMode.Assertive</code> only for error toasts that require immediate attention.</li>
+              <li>Use <code>Modifier.semantics { contentDescription = "Success: Changes saved." }</code> on the toast container to provide a single, complete announcement string. Include the severity in the description — never rely on icon color alone to convey meaning.</li>
+              <li>Mark the dismiss button with <code>Modifier.semantics { role = Role.Button; contentDescription = "Dismiss notification" }</code>. After the toast is dismissed, use <code>FocusRequester</code> to return focus to the element the user was previously interacting with.</li>
+              <li>If the toast contains an action (e.g. "Undo"), add it as a <code>customActions</code> entry in <code>Modifier.semantics</code> so TalkBack users can activate it without navigating to the button manually. Ensure the toast auto-dismiss timer is long enough for switch-access users to reach the action.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.semantics.*
+import androidx.compose.ui.Modifier
+
+@Composable
+fun AccessibleToast(
+    message: String,
+    isError: Boolean,
+    onDismiss: () -&gt; Unit,
+    onUndo: (() -&gt; Unit)? = null
+) {
+    val liveRegionMode = if (isError) LiveRegionMode.Assertive else LiveRegionMode.Polite
+    val semanticsLabel = if (isError) "Error: $message" else "Success: $message"
+
+    Snackbar(
+        modifier = Modifier.semantics {
+            liveRegion = liveRegionMode
+            contentDescription = semanticsLabel
+            if (onUndo != null) {
+                customActions = listOf(
+                    CustomAccessibilityAction(label = "Undo") { onUndo(); true }
+                )
+            }
+        },
+        action = onUndo?.let {
+            { TextButton(onClick = it) { Text("Undo") } }
+        },
+        dismissAction = {
+            IconButton(
+                onClick = onDismiss,
+                modifier = Modifier.semantics {
+                    role = Role.Button
+                    contentDescription = "Dismiss notification"
+                }
+            ) {
+                Icon(Icons.Default.Close, contentDescription = null)
+            }
+        }
+    ) {
+        Text(message)
+    }
+}</code></pre>
+            </div>
+          </section>
           <section aria-labelledby="further-reading-heading">
             <h2 id="further-reading-heading">Further reading</h2>
             <ul>

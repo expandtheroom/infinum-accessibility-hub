@@ -242,6 +242,118 @@
             </div>
 </section>
 
+          <section aria-labelledby="dev-ios-heading">
+            <h2 id="dev-ios-heading">Dev guidelines for iOS</h2>
+            <ul>
+              <li><strong>Combine each slide into a single focusable unit using <code>.accessibilityElement(children: .combine)</code>.</strong> This merges the slide's image, heading, and body text into one VoiceOver element, preventing fragmented navigation through slide content.</li>
+              <li><strong>Give each slide a descriptive <code>.accessibilityLabel</code> that includes position.</strong> For example, <code>.accessibilityLabel("Slide 2 of 5: Intro to WCAG")</code> so VoiceOver users always know where they are in the sequence.</li>
+              <li><strong>Label prev/next buttons with <code>.accessibilityLabel</code> and add an <code>.accessibilityHint</code>.</strong> For example, <code>.accessibilityLabel("Next slide")</code> with <code>.accessibilityHint("Advances to slide 3 of 5")</code>. Apply <code>.accessibilityAddTraits(.isButton)</code> if the control is not a native <code>Button</code>.</li>
+              <li><strong>Announce slide changes as a live region using <code>UIAccessibility.post(notification: .announcement, argument:)</code>.</strong> Post the announcement after updating the active slide so VoiceOver reads out the new position without the user needing to navigate to a counter element.</li>
+              <li><strong>Pause autoplay when VoiceOver is active and respect <code>UIAccessibility.isReduceMotionEnabled</code>.</strong> Check both flags on appearance and suspend the rotation timer so animated transitions do not interrupt screen reader users or users who have requested reduced motion.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import SwiftUI
+
+struct AccessibleCarousel: View {
+    let slides: [(title: String, body: String)]
+    @State private var currentIndex = 0
+
+    var body: some View {
+        VStack(spacing: 16) {
+            slideView(for: slides[currentIndex], index: currentIndex)
+
+            HStack(spacing: 24) {
+                Button("Previous slide") {
+                    currentIndex = (currentIndex - 1 + slides.count) % slides.count
+                    announceSlide()
+                }
+                .accessibilityHint("Goes to slide \(currentIndex == 0 ? slides.count : currentIndex) of \(slides.count)")
+
+                Button("Next slide") {
+                    currentIndex = (currentIndex + 1) % slides.count
+                    announceSlide()
+                }
+                .accessibilityHint("Advances to slide \(currentIndex == slides.count - 1 ? 1 : currentIndex + 2) of \(slides.count)")
+            }
+        }
+    }
+
+    func slideView(for slide: (title: String, body: String), index: Int) -&gt; some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(slide.title).font(.headline)
+            Text(slide.body).font(.body)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Slide \(index + 1) of \(slides.count): \(slide.title). \(slide.body)")
+    }
+
+    func announceSlide() {
+        let message = "Slide \(currentIndex + 1) of \(slides.count): \(slides[currentIndex].title)"
+        UIAccessibility.post(notification: .announcement, argument: message)
+    }
+}</code></pre>
+            </div>
+          </section>
+          <section aria-labelledby="dev-android-heading">
+            <h2 id="dev-android-heading">Dev guidelines for Android</h2>
+            <ul>
+              <li><strong>Use <code>mergeDescendants = true</code> on each slide to merge its children into a single focusable unit.</strong> This prevents TalkBack from navigating into the individual text elements of a slide separately, mirroring the behaviour of a combined VoiceOver element on iOS.</li>
+              <li><strong>Set a <code>contentDescription</code> on each slide that includes position.</strong> For example, <code>contentDescription = "Slide 2 of 5: Intro to WCAG. An overview of the Web Content Accessibility Guidelines."</code> so TalkBack users always hear their position and the slide content together.</li>
+              <li><strong>Apply <code>role = Role.Button</code> to prev/next controls and provide a clear <code>contentDescription</code>.</strong> For example, <code>contentDescription = "Next slide"</code>. If the control also needs a state description (e.g. disabled at the last slide), set <code>stateDescription</code> accordingly.</li>
+              <li><strong>Announce slide changes using a <code>LiveRegionMode.Polite</code> semantics node on the slide counter.</strong> Update the counter's text whenever the active slide changes; Compose will automatically post a TalkBack announcement without requiring focus to move to the counter.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.*
+import androidx.compose.ui.unit.dp
+
+data class Slide(val title: String, val body: String)
+
+@Composable
+fun AccessibleCarousel(slides: List&lt;Slide&gt;) {
+    var currentIndex by remember { mutableStateOf(0) }
+    val slide = slides[currentIndex]
+    val positionText = "Slide ${currentIndex + 1} of ${slides.size}"
+
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        Box(
+            Modifier.semantics(mergeDescendants = true) {
+                contentDescription = "$positionText: ${slide.title}. ${slide.body}"
+            }
+        ) {
+            Column {
+                Text(slide.title, style = MaterialTheme.typography.titleMedium)
+                Text(slide.body, style = MaterialTheme.typography.bodyMedium)
+            }
+        }
+
+        Text(
+            text = positionText,
+            modifier = Modifier.semantics {
+                liveRegion = LiveRegionMode.Polite
+            }
+        )
+
+        Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+            Button(
+                onClick = { currentIndex = (currentIndex - 1 + slides.size) % slides.size },
+                modifier = Modifier.semantics { contentDescription = "Previous slide" }
+            ) { Text("Previous") }
+
+            Button(
+                onClick = { currentIndex = (currentIndex + 1) % slides.size },
+                modifier = Modifier.semantics { contentDescription = "Next slide" }
+            ) { Text("Next") }
+        }
+    }
+}</code></pre>
+            </div>
+          </section>
           <section aria-labelledby="further-reading-heading">
             <h2 id="further-reading-heading">Further reading</h2>
             <ul>

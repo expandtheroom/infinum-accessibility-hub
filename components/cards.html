@@ -221,6 +221,116 @@
               </div>
             </div>
 </section>
+          <section aria-labelledby="dev-ios-heading">
+            <h2 id="dev-ios-heading">Dev guidelines for iOS</h2>
+            <ul>
+              <li>Use <code>.accessibilityElement(children: .combine)</code> to merge the card's image, title, and description into a single VoiceOver focus target — this prevents users from having to navigate each sub-element individually before reaching the primary action.</li>
+              <li>Apply <code>.accessibilityLabel("...")</code> on the combined card element to provide a concise, descriptive name (e.g. "Getting started with ARIA, article") rather than relying on the auto-concatenated text from child views.</li>
+              <li>Use <code>.accessibilityHint("...")</code> to describe the result of tapping the card (e.g. "Opens the full article") so users know what to expect before activating it.</li>
+              <li>Use <code>accessibilityCustomActions</code> to expose secondary actions (e.g. Save, Share) on the combined element — this avoids extra focus stops while still making all actions reachable.</li>
+              <li>Mark purely decorative card images with <code>.accessibilityHidden(true)</code> so VoiceOver skips them; apply <code>.accessibilityIgnoresInvertColors()</code> to photography or illustrations that should not be inverted in Smart Invert mode.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>struct ArticleCard: View {
+    let title: String
+    let summary: String
+    let onTap: () -&gt; Void
+    let onSave: () -&gt; Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Image("article-thumbnail")
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .frame(height: 120)
+                .clipped()
+                .accessibilityHidden(true)
+                .accessibilityIgnoresInvertColors()
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.headline)
+                Text(summary)
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            }
+            .padding()
+        }
+        .background(Color(.secondarySystemBackground))
+        .cornerRadius(12)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(title), article")
+        .accessibilityHint("Opens the full article")
+        .accessibilityAddTraits(.isButton)
+        .accessibilityCustomActions([
+            AccessibilityCustomAction("Save article") { _ in
+                onSave()
+                return true
+            }
+        ])
+        .onTapGesture { onTap() }
+    }
+}</code></pre>
+            </div>
+          </section>
+          <section aria-labelledby="dev-android-heading">
+            <h2 id="dev-android-heading">Dev guidelines for Android</h2>
+            <ul>
+              <li>Apply <code>Modifier.semantics(mergeDescendants = true) { }</code> to the card container so TalkBack announces the card as a single item rather than focusing each child element (image, title, description) separately.</li>
+              <li>Set <code>contentDescription</code> inside the merged semantics block to provide a concise, human-readable label for the card (e.g. "Getting started with ARIA, article") instead of relying on auto-concatenated child text.</li>
+              <li>Assign <code>role = Role.Button</code> in the semantics block when the card has a tap action, so TalkBack announces the correct interaction affordance.</li>
+              <li>Use <code>customActions</code> to expose secondary actions (e.g. Save, Share) without adding extra focusable elements — list each action with a label and lambda so TalkBack users can access them via the local context menu.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>@Composable
+fun ArticleCard(
+    title: String,
+    summary: String,
+    onTap: () -&gt; Unit,
+    onSave: () -&gt; Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onTap)
+            .semantics(mergeDescendants = true) {
+                contentDescription = "$title, article"
+                role = Role.Button
+                customActions = listOf(
+                    CustomAccessibilityAction(
+                        label = "Save article",
+                        action = { onSave(); true }
+                    )
+                )
+            },
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column {
+            Image(
+                painter = painterResource(id = R.drawable.article_thumbnail),
+                contentDescription = null,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(120.dp),
+                contentScale = ContentScale.Crop
+            )
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(text = title, style = MaterialTheme.typography.titleMedium)
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = summary,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}</code></pre>
+            </div>
+          </section>
           <section aria-labelledby="further-reading-heading">
             <h2 id="further-reading-heading">Further reading</h2>
             <ul>

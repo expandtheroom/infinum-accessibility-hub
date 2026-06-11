@@ -230,6 +230,108 @@
               </div>
             </div>
 </section>
+          <section aria-labelledby="dev-ios-heading">
+            <h2 id="dev-ios-heading">Dev guidelines for iOS</h2>
+            <ul>
+              <li>Wrap the tab bar items using <code>.accessibilityElement(children: .contain)</code> on the container so VoiceOver can navigate each item individually rather than merging them into a single focusable unit.</li>
+              <li>Apply <code>.accessibilityLabel("Home")</code> to each tab item so VoiceOver announces a clear, human-readable name rather than reading the icon's internal label or image name.</li>
+              <li>Add <code>.accessibilityAddTraits(.isSelected)</code> to the active tab item so VoiceOver announces "selected" alongside the label, communicating the current destination without relying on color alone.</li>
+              <li>Mark decorative icon images with <code>.accessibilityHidden(true)</code> on each icon view to prevent VoiceOver from announcing the image separately from the tab label.</li>
+              <li>Use <code>.accessibilityHint("Shows the Home screen")</code> sparingly on items where the destination is not obvious from the label alone.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import SwiftUI
+
+struct MainTabBar: View {
+    @State private var selectedTab: Int = 0
+
+    var body: some View {
+        TabView(selection: $selectedTab) {
+            HomeView()
+                .tabItem {
+                    Image(systemName: "house.fill")
+                        .accessibilityHidden(true)
+                    Text("Home")
+                }
+                .tag(0)
+                .accessibilityLabel("Home")
+                .accessibilityHint("Shows the Home screen")
+                .accessibilityAddTraits(selectedTab == 0 ? .isSelected : [])
+
+            SearchView()
+                .tabItem {
+                    Image(systemName: "magnifyingglass")
+                        .accessibilityHidden(true)
+                    Text("Search")
+                }
+                .tag(1)
+                .accessibilityLabel("Search")
+                .accessibilityAddTraits(selectedTab == 1 ? .isSelected : [])
+
+            ProfileView()
+                .tabItem {
+                    Image(systemName: "person.fill")
+                        .accessibilityHidden(true)
+                    Text("Profile")
+                }
+                .tag(2)
+                .accessibilityLabel("Profile")
+                .accessibilityAddTraits(selectedTab == 2 ? .isSelected : [])
+        }
+    }
+}</code></pre>
+            </div>
+          </section>
+          <section aria-labelledby="dev-android-heading">
+            <h2 id="dev-android-heading">Dev guidelines for Android</h2>
+            <ul>
+              <li>Use <code>Modifier.semantics { role = Role.Tab }</code> on each navigation item so TalkBack announces the correct role and users understand they are navigating between top-level destinations.</li>
+              <li>Set <code>contentDescription</code> on each item's <code>Modifier.semantics</code> block to provide a clear, human-readable label — especially important when the icon is the primary visual.</li>
+              <li>Use <code>stateDescription = if (selected) "Selected" else ""</code> on the active item so TalkBack communicates which tab is currently active without relying on color alone.</li>
+              <li>Apply <code>Modifier.clearAndSetSemantics { }</code> on decorative icon images inside the tab item to prevent TalkBack from announcing them separately from the item's own content description.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.*
+
+@Composable
+fun MainBottomNavBar() {
+    val items = listOf("Home", "Search", "Profile")
+    val icons = listOf("home", "search", "person")
+    var selectedIndex by remember { mutableStateOf(0) }
+
+    NavigationBar {
+        items.forEachIndexed { index, label -&gt;
+            val isSelected = selectedIndex == index
+            NavigationBarItem(
+                selected = isSelected,
+                onClick = { selectedIndex = index },
+                icon = {
+                    Icon(
+                        imageVector = iconForLabel(icons[index]),
+                        contentDescription = null,
+                        modifier = Modifier.clearAndSetSemantics { }
+                    )
+                },
+                label = { Text(label) },
+                modifier = Modifier.semantics {
+                    role = Role.Tab
+                    contentDescription = label
+                    stateDescription = if (isSelected) "Selected" else ""
+                }
+            )
+        }
+    }
+}</code></pre>
+            </div>
+          </section>
           <section aria-labelledby="further-reading-heading">
             <h2 id="further-reading-heading">Further reading</h2>
             <ul>

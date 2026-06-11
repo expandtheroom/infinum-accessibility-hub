@@ -224,6 +224,114 @@
               </div>
             </div>
 </section>
+          <section aria-labelledby="dev-ios-heading">
+            <h2 id="dev-ios-heading">Dev guidelines for iOS</h2>
+            <ul>
+              <li>Tooltips are not a native UIKit or SwiftUI pattern. Implement them as custom views and expose the tooltip text to VoiceOver by setting <code>.accessibilityHint("...")</code> on the trigger element — this surfaces the supplementary information without requiring the user to reveal the tooltip bubble.</li>
+              <li>Use <code>.accessibilityLabel("...")</code> on the trigger to provide a clear name, and <code>.accessibilityHint("...")</code> for the tooltip content. Keep the hint concise — VoiceOver reads it after a brief pause following the label.</li>
+              <li>If the tooltip is shown programmatically (e.g. on long press), post a VoiceOver announcement using <code>UIAccessibility.post(notification: .announcement, argument: "...")</code> so users who cannot see the tooltip bubble are informed of its content when it appears.</li>
+              <li>Mark the tooltip bubble itself as <code>.accessibilityHidden(true)</code> so VoiceOver does not land on the floating text separately — all information should be consumed via the trigger element's label and hint.</li>
+              <li>Never rely on hover to show the tooltip. On iOS, hover does not apply. The trigger must expose its supplementary information through accessibility properties at all times or via a long-press interaction that posts an announcement.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import SwiftUI
+
+struct CopyButton: View {
+    @State private var isTooltipVisible = false
+
+    var body: some View {
+        ZStack(alignment: .top) {
+            Button(action: copyToClipboard) {
+                Image(systemName: "doc.on.doc")
+                    .font(.title2)
+            }
+            .accessibilityLabel("Copy to clipboard")
+            .accessibilityHint("Copies the current content to your clipboard")
+            .onLongPressGesture {
+                isTooltipVisible = true
+                UIAccessibility.post(
+                    notification: .announcement,
+                    argument: "Copies the current content to your clipboard"
+                )
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                    isTooltipVisible = false
+                }
+            }
+
+            if isTooltipVisible {
+                Text("Copy to clipboard")
+                    .font(.caption)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color.black.opacity(0.8))
+                    .foregroundColor(.white)
+                    .cornerRadius(4)
+                    .offset(y: -36)
+                    .accessibilityHidden(true)
+            }
+        }
+    }
+
+    private func copyToClipboard() {
+        // copy logic
+    }
+}</code></pre>
+            </div>
+          </section>
+          <section aria-labelledby="dev-android-heading">
+            <h2 id="dev-android-heading">Dev guidelines for Android</h2>
+            <ul>
+              <li>Android does not have a native tooltip composable for accessibility purposes. Expose tooltip content via <code>Modifier.semantics { contentDescription = "..." }</code> on the trigger, or use <code>tooltipText</code> with <code>PlainTooltip</code> from Material 3, which TalkBack reads automatically on long press.</li>
+              <li>Set <code>Modifier.semantics { role = Role.Button }</code> on the trigger element so TalkBack announces it correctly and users know the element is interactive.</li>
+              <li>If a custom tooltip is shown programmatically, use a <code>SemanticsPropertyReceiver</code> with <code>liveRegion = LiveRegionMode.Polite</code> on the tooltip container so TalkBack announces the content when it appears without interrupting the current reading flow.</li>
+              <li>Apply <code>Modifier.clearAndSetSemantics { }</code> or <code>semantics { invisibleToUser() }</code> to the tooltip bubble itself so TalkBack does not treat the floating text as a separate focusable element — all information should be conveyed through the trigger.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import androidx.compose.material3.PlainTooltip
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
+import androidx.compose.material3.rememberTooltipState
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
+
+@Composable
+fun CopyButton(onCopy: () -&gt; Unit) {
+    val tooltipState = rememberTooltipState()
+
+    TooltipBox(
+        positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+        tooltip = {
+            PlainTooltip {
+                Text("Copy to clipboard")
+            }
+        },
+        state = tooltipState
+    ) {
+        IconButton(
+            onClick = onCopy,
+            modifier = Modifier.semantics {
+                role = Role.Button
+                contentDescription = "Copy to clipboard"
+            }
+        ) {
+            Icon(
+                imageVector = Icons.Default.ContentCopy,
+                contentDescription = null
+            )
+        }
+    }
+}</code></pre>
+            </div>
+          </section>
           <section aria-labelledby="further-reading-heading">
             <h2 id="further-reading-heading">Further reading</h2>
             <ul>

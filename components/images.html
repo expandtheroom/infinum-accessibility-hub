@@ -237,6 +237,107 @@
             </div>
 </section>
 
+          <section aria-labelledby="dev-ios-heading">
+            <h2 id="dev-ios-heading">Dev guidelines for iOS</h2>
+            <ul>
+              <li><strong>Use <code>.accessibilityHidden(true)</code> for decorative images.</strong> Purely aesthetic images should be hidden from VoiceOver so they don't interrupt the reading flow. Apply this to any <code>Image</code> view that carries no informational meaning.</li>
+              <li><strong>Use <code>.accessibilityLabel("...")</code> to provide meaningful descriptions for informative images.</strong> Write a description that conveys the same meaning the image carries in context — not a visual inventory. For a chart showing a revenue increase, describe the insight, not the chart type.</li>
+              <li><strong>Use <code>.accessibilityIgnoresInvertColors()</code> on photographs and media images.</strong> Applying Smart Invert accessibility setting to photographs produces visually incorrect results. This modifier preserves the original colours for image views.</li>
+              <li><strong>For icon-only buttons, set the label on the parent button, not the image.</strong> Wrap the icon in a <code>Button</code> and apply <code>.accessibilityLabel</code> to the button. Mark the <code>Image</code> itself as decorative with <code>Image(decorative:)</code> or <code>.accessibilityHidden(true)</code> so VoiceOver announces the action, not the icon name.</li>
+              <li><strong>For complex images like charts or diagrams, use <code>.accessibilityHint("...")</code> to point users to a longer description.</strong> The label gives the summary; the hint can direct VoiceOver users to a nearby text block that contains the full data.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import SwiftUI
+
+// Informative image
+struct RevenueChartImage: View {
+    var body: some View {
+        Image("bar-chart-q4")
+            .resizable()
+            .scaledToFit()
+            .accessibilityLabel("Bar chart: Q4 revenue up 18% year-over-year, reaching $4.2M")
+            .accessibilityIgnoresInvertColors()
+    }
+}
+
+// Decorative image
+struct DecorativeWave: View {
+    var body: some View {
+        Image("divider-wave")
+            .resizable()
+            .scaledToFit()
+            .accessibilityHidden(true)
+    }
+}
+
+// Icon-only button
+struct DeleteButton: View {
+    var body: some View {
+        Button {
+            // delete action
+        } label: {
+            Image(systemName: "trash")
+                .accessibilityHidden(true)
+        }
+        .accessibilityLabel("Delete item")
+    }
+}</code></pre>
+            </div>
+          </section>
+          <section aria-labelledby="dev-android-heading">
+            <h2 id="dev-android-heading">Dev guidelines for Android</h2>
+            <ul>
+              <li><strong>Use <code>Modifier.semantics { contentDescription = "..." }</code> for informative images.</strong> Provide a description that communicates the meaning the image conveys — not a visual description. For a revenue chart, describe the data insight rather than the chart's appearance.</li>
+              <li><strong>Set <code>contentDescription = null</code> for decorative images.</strong> Passing <code>null</code> tells TalkBack the image is decorative and should be skipped. Do not omit the parameter — omitting it can cause TalkBack to announce the resource name.</li>
+              <li><strong>For icon-only buttons, apply <code>contentDescription</code> to the <code>IconButton</code> or its <code>Modifier</code>, and suppress the icon's own description.</strong> The outer interactive element should carry the accessible label; the inner <code>Icon</code> composable should receive <code>contentDescription = null</code>.</li>
+              <li><strong>Use <code>Modifier.semantics { role = Role.Image }</code> when a non-Image composable acts as an image.</strong> If a <code>Box</code> or <code>Canvas</code> renders meaningful visual content, declare its role explicitly so TalkBack announces it correctly.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import androidx.compose.foundation.Image
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
+
+// Informative image
+@Composable
+fun RevenueChartImage() {
+    Image(
+        painter = painterResource(R.drawable.bar_chart_q4),
+        contentDescription = "Bar chart: Q4 revenue up 18% year-over-year, reaching \$4.2M"
+    )
+}
+
+// Decorative image
+@Composable
+fun DecorativeWave() {
+    Image(
+        painter = painterResource(R.drawable.divider_wave),
+        contentDescription = null
+    )
+}
+
+// Icon-only button
+@Composable
+fun DeleteButton(onDelete: () -&gt; Unit) {
+    IconButton(onClick = onDelete) {
+        Icon(
+            painter = painterResource(R.drawable.ic_trash),
+            contentDescription = null
+        )
+    }
+    // AccessibilityLabel is set on the IconButton via its semantics
+    // by passing Modifier.semantics { contentDescription = "Delete item" }
+}</code></pre>
+            </div>
+          </section>
           <section aria-labelledby="further-reading-heading">
             <h2 id="further-reading-heading">Further reading</h2>
             <ul>

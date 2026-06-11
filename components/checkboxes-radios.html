@@ -248,6 +248,115 @@
             </div>
 </section>
 
+          <section aria-labelledby="dev-ios-heading">
+            <h2 id="dev-ios-heading">Dev guidelines for iOS</h2>
+            <ul>
+              <li><strong>Use <code>.accessibilityElement(children: .combine)</code> on the row container</strong> when pairing a label and a checkbox or radio control — this merges the label text and the control state into a single VoiceOver focus target, so users hear "Email, checkbox, unchecked" rather than navigating two separate elements.</li>
+              <li><strong>Apply <code>.accessibilityAddTraits(.isSelected)</code> to the selected radio option</strong> and remove it from all others when selection changes. VoiceOver will announce "selected" on the active option and nothing on the rest, which maps to the native radio button mental model.</li>
+              <li><strong>Set <code>.accessibilityValue("checked")</code> or <code>.accessibilityValue("unchecked")</code> explicitly on custom checkbox controls</strong> so VoiceOver announces the current state regardless of visual styling. For a three-state checkbox, also supply <code>.accessibilityValue("mixed")</code> when the indeterminate state is active.</li>
+              <li><strong>Mark disabled options with <code>.accessibilityHint("Not available")</code> and <code>.accessibilityAddTraits(.isStaticText)</code></strong> so VoiceOver communicates that the option cannot be interacted with rather than silently omitting it from focus.</li>
+              <li><strong>Announce group validation errors using <code>UIAccessibility.post(notification: .announcement, argument: "...")</code></strong> — for example, "Please select at least one contact method" — immediately after the user attempts to continue without making a required selection.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import SwiftUI
+
+struct ContactMethodRow: View {
+    let label: String
+    @Binding var isChecked: Bool
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: isChecked ? "checkmark.square.fill" : "square")
+                .foregroundColor(isChecked ? .accentColor : .secondary)
+                .font(.title2)
+            Text(label)
+                .font(.body)
+        }
+        .contentShape(Rectangle())
+        .onTapGesture { isChecked.toggle() }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(label)
+        .accessibilityValue(isChecked ? "checked" : "unchecked")
+        .accessibilityAddTraits(.isButton)
+        .accessibilityHint("Double-tap to toggle")
+    }
+}
+
+struct ContactMethodGroup: View {
+    @State private var emailSelected = false
+    @State private var smsSelected = false
+    @State private var phoneSelected = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Preferred contact methods")
+                .font(.headline)
+                .accessibilityAddTraits(.isHeader)
+            ContactMethodRow(label: "Email", isChecked: $emailSelected)
+            ContactMethodRow(label: "SMS", isChecked: $smsSelected)
+            ContactMethodRow(label: "Phone", isChecked: $phoneSelected)
+        }
+        .padding()
+    }
+}</code></pre>
+            </div>
+          </section>
+          <section aria-labelledby="dev-android-heading">
+            <h2 id="dev-android-heading">Dev guidelines for Android</h2>
+            <ul>
+              <li><strong>Set <code>Role.Checkbox</code> or <code>Role.RadioButton</code> in a <code>Modifier.semantics</code> block</strong> on custom controls so TalkBack announces the correct role. Without an explicit role, a custom composable is treated as a generic region and users lose the interaction affordance cue.</li>
+              <li><strong>Use <code>mergeDescendants = true</code> on the row container</strong> when a label <code>Text</code> and a <code>Checkbox</code> or <code>RadioButton</code> composable are siblings — this merges them into a single focus target and TalkBack reads the combined label and state automatically.</li>
+              <li><strong>Set <code>stateDescription</code> for custom or three-state checkboxes</strong> — for example, <code>stateDescription = if (checked) "Checked" else "Unchecked"</code> — to ensure TalkBack announces state changes consistently regardless of visual styling or toggle animation.</li>
+              <li><strong>Mark the group label as a heading</strong> using <code>Modifier.semantics { heading() }</code> on the <code>Text</code> that acts as the fieldset legend. This allows TalkBack users navigating by headings to jump directly to each group.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.*
+import androidx.compose.ui.unit.dp
+
+@Composable
+fun ContactMethodRow(label: String, checked: Boolean, onCheckedChange: (Boolean) -&gt; Unit) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .semantics(mergeDescendants = true) {
+                role = Role.Checkbox
+                stateDescription = if (checked) "Checked" else "Unchecked"
+            }
+    ) {
+        Checkbox(checked = checked, onCheckedChange = onCheckedChange)
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(text = label, style = MaterialTheme.typography.bodyLarge)
+    }
+}
+
+@Composable
+fun ContactMethodGroup() {
+    val options = remember { mutableStateMapOf("Email" to false, "SMS" to false, "Phone" to false) }
+    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(
+            text = "Preferred contact methods",
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.semantics { heading() }
+        )
+        options.keys.forEach { label -&gt;
+            ContactMethodRow(
+                label = label,
+                checked = options[label] == true,
+                onCheckedChange = { options[label] = it }
+            )
+        }
+    }
+}</code></pre>
+            </div>
+          </section>
           <section aria-labelledby="further-reading-heading">
             <h2 id="further-reading-heading">Further reading</h2>
             <ul>

@@ -232,6 +232,116 @@
             </div>
 </section>
 
+          <section aria-labelledby="dev-ios-heading">
+            <h2 id="dev-ios-heading">Dev guidelines for iOS</h2>
+            <ul>
+              <li><strong>Use <code>.accessibilityElement(children: .combine)</code> on the accordion row container.</strong> This merges the trigger label and chevron icon into a single VoiceOver element, so the user hears one announcement per row rather than navigating through two separate elements.</li>
+              <li><strong>Apply <code>.accessibilityLabel("Section title")</code> and <code>.accessibilityHint("Double tap to expand")</code> or <code>"Double tap to collapse"</code> to the trigger button.</strong> The label provides the VoiceOver name; the hint communicates what will happen on activation, matching the information that <code>aria-expanded</code> conveys on web.</li>
+              <li><strong>Set <code>.accessibilityValue("expanded")</code> or <code>.accessibilityValue("collapsed")</code> based on the open state.</strong> This communicates the current state of the panel to VoiceOver in the same way <code>aria-expanded</code> does, without burying it in the hint.</li>
+              <li><strong>Mark the chevron icon as <code>.accessibilityHidden(true)</code>.</strong> The icon is a visual affordance only. Its direction communicates state visually, but with <code>.accessibilityValue</code> handling state programmatically, the icon adds no information and creates duplicate announcements.</li>
+              <li><strong>Add <code>.accessibilityAddTraits(.isButton)</code> on the trigger view if it is not a native <code>Button</code>.</strong> This ensures VoiceOver announces "button" and users know the element is interactive.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import SwiftUI
+
+struct AccordionRow: View {
+    let title: String
+    let content: String
+    @State private var isExpanded: Bool = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Button(action: { isExpanded.toggle() }) {
+                HStack {
+                    Text(title)
+                        .font(.headline)
+                        .foregroundColor(.primary)
+                    Spacer()
+                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                        .accessibilityHidden(true)
+                }
+                .padding()
+            }
+            .accessibilityLabel(title)
+            .accessibilityHint(isExpanded ? "Double tap to collapse" : "Double tap to expand")
+            .accessibilityValue(isExpanded ? "expanded" : "collapsed")
+            .accessibilityAddTraits(.isButton)
+
+            if isExpanded {
+                Text(content)
+                    .padding()
+                    .accessibilityElement(children: .contain)
+            }
+        }
+        .background(Color(.systemBackground))
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(Color(.separator), lineWidth: 1)
+        )
+    }
+}</code></pre>
+            </div>
+          </section>
+          <section aria-labelledby="dev-android-heading">
+            <h2 id="dev-android-heading">Dev guidelines for Android</h2>
+            <ul>
+              <li><strong>Use <code>Modifier.semantics { contentDescription = "..." }</code> on the trigger row to give TalkBack a clear, combined announcement.</strong> Without this, TalkBack may read the chevron icon text separately from the label, producing confusing announcements.</li>
+              <li><strong>Set <code>stateDescription = if (isExpanded) "Expanded" else "Collapsed"</code> inside the semantics block.</strong> TalkBack appends this to the content description, communicating state the same way <code>aria-expanded</code> does on web.</li>
+              <li><strong>Apply <code>role = Role.Button</code> in the semantics block on any custom trigger that is not a native <code>Button</code> composable.</strong> TalkBack announces "button" after the label so users know the element is interactive.</li>
+              <li><strong>Use <code>Modifier.clearAndSetSemantics { }</code> on the chevron icon to suppress its TalkBack announcement.</strong> The icon provides a visual affordance only; state is already communicated via <code>stateDescription</code>, so the icon should not produce an additional focus stop.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.*
+import androidx.compose.ui.unit.dp
+
+@Composable
+fun AccordionRow(title: String, content: String) {
+    var isExpanded by remember { mutableStateOf(false) }
+
+    Column {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { isExpanded = !isExpanded }
+                .semantics {
+                    contentDescription = title
+                    stateDescription = if (isExpanded) "Expanded" else "Collapsed"
+                    role = Role.Button
+                }
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(text = title, style = MaterialTheme.typography.titleMedium)
+            Icon(
+                imageVector = if (isExpanded) Icons.Default.KeyboardArrowUp
+                              else Icons.Default.KeyboardArrowDown,
+                contentDescription = null,
+                modifier = Modifier.clearAndSetSemantics { }
+            )
+        }
+        if (isExpanded) {
+            Text(
+                text = content,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
+    }
+}</code></pre>
+            </div>
+          </section>
           <section aria-labelledby="further-reading-heading">
             <h2 id="further-reading-heading">Further reading</h2>
             <ul>

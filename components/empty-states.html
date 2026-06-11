@@ -217,6 +217,94 @@
               </div>
             </div>
 </section>
+          <section aria-labelledby="dev-ios-heading">
+            <h2 id="dev-ios-heading">Dev guidelines for iOS</h2>
+            <ul>
+              <li>Mark decorative illustrations with <code>.accessibilityHidden(true)</code> so VoiceOver skips them entirely. The visible heading and body text must carry all meaning independently.</li>
+              <li>Use <code>.accessibilityElement(children: .combine)</code> on the empty-state container to merge the heading, body text, and CTA into a single focusable unit — this prevents VoiceOver users from having to navigate through each subview individually when the content is short and self-contained.</li>
+              <li>When an empty state appears dynamically (e.g. after the user deletes the last item), post a <code>UIAccessibility.post(notification: .screenChanged, argument: emptyStateHeading)</code> to move VoiceOver focus to the heading. Leaving focus on a deleted element causes a broken experience.</li>
+              <li>The call-to-action button must have a descriptive <code>.accessibilityLabel("...")</code> — prefer "Create your first report" over a generic label like "Get started" so the action is unambiguous out of context.</li>
+              <li>Add <code>.accessibilityAddTraits(.isHeader)</code> to the empty-state heading view if it is not a native <code>Text</code> styled as a heading — this ensures the heading is surfaced correctly when VoiceOver users navigate by headings.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>struct EmptyStateView: View {
+    var onCreateTapped: () -&gt; Void
+
+    var body: some View {
+        VStack(spacing: 16) {
+            Image("empty-inbox")
+                .resizable()
+                .frame(width: 80, height: 80)
+                .accessibilityHidden(true)
+
+            Text("No messages yet")
+                .font(.title2)
+                .fontWeight(.semibold)
+                .accessibilityAddTraits(.isHeader)
+
+            Text("When someone sends you a message, it will appear here.")
+                .font(.body)
+                .multilineTextAlignment(.center)
+
+            Button("Compose your first message") {
+                onCreateTapped()
+            }
+            .accessibilityLabel("Compose your first message")
+        }
+        .padding()
+    }
+}</code></pre>
+            </div>
+          </section>
+          <section aria-labelledby="dev-android-heading">
+            <h2 id="dev-android-heading">Dev guidelines for Android</h2>
+            <ul>
+              <li>Mark decorative illustrations with <code>Modifier.semantics { contentDescription = null }</code> combined with <code>Role.Image</code> removed, or use <code>Modifier.clearAndSetSemantics {}</code> so TalkBack skips the image entirely.</li>
+              <li>Wrap the heading, body text, and CTA in a container with <code>Modifier.semantics(mergeDescendants = true) {}</code> only when the content is short and the combined announcement makes sense as a unit. For longer or interactive empty states, keep elements separate so users can navigate independently.</li>
+              <li>Mark the empty-state heading with <code>Modifier.semantics { heading() }</code> so TalkBack users who navigate by headings can land on the empty state directly.</li>
+              <li>When the empty state appears dynamically after a user action, use <code>LiveRegionMode.Polite</code> on the heading or container so TalkBack announces the change without interrupting ongoing speech.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>@Composable
+fun EmptyStateView(onCreateClick: () -&gt; Unit) {
+    Column(
+        modifier = Modifier
+            .padding(24.dp)
+            .fillMaxWidth(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.ic_empty_inbox),
+            contentDescription = null
+        )
+
+        Text(
+            text = "No messages yet",
+            style = MaterialTheme.typography.headlineSmall,
+            modifier = Modifier.semantics { heading() }
+        )
+
+        Text(
+            text = "When someone sends you a message, it will appear here.",
+            style = MaterialTheme.typography.bodyMedium,
+            textAlign = TextAlign.Center
+        )
+
+        Button(
+            onClick = onCreateClick,
+            modifier = Modifier.semantics {
+                contentDescription = "Compose your first message"
+            }
+        ) {
+            Text("Compose your first message")
+        }
+    }
+}</code></pre>
+            </div>
+          </section>
           <section aria-labelledby="further-reading-heading">
             <h2 id="further-reading-heading">Further reading</h2>
             <ul>

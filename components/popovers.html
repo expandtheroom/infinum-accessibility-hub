@@ -242,6 +242,146 @@
               </div>
             </div>
 </section>
+          <section aria-labelledby="dev-ios-heading">
+            <h2 id="dev-ios-heading">Dev guidelines for iOS</h2>
+            <ul>
+              <li>Wrap the popover trigger button and its associated popover content in a parent view using <code>.accessibilityElement(children: .contain)</code> so VoiceOver treats the trigger and popover as separate, independently focusable elements rather than merging them into a single announcement.</li>
+              <li>Apply <code>.accessibilityLabel("Filters")</code> and <code>.accessibilityHint("Opens a popover with filter options")</code> to the trigger button so VoiceOver users understand both what the control is and what activating it will do before they act.</li>
+              <li>When the popover opens, post a <code>UIAccessibility.post(notification: .screenChanged, argument: popoverHeadingView)</code> announcement to move VoiceOver focus into the popover — equivalent to programmatic focus management on web. Use <code>.announcement</code> for lightweight state changes and <code>.screenChanged</code> when the majority of the screen content has changed.</li>
+              <li>Add <code>.accessibilityAddTraits(.isButton)</code> to the trigger and ensure the close button inside the popover has <code>.accessibilityLabel("Close filters popover")</code> so its purpose is unambiguous when no visible label text is present.</li>
+              <li>When the popover is dismissed — by the close button or a tap outside — post <code>UIAccessibility.post(notification: .screenChanged, argument: triggerButton)</code> to return VoiceOver focus to the trigger, matching the web requirement to never leave focus inside a closed overlay.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>struct FilterPopoverButton: View {
+    @State private var isPopoverPresented = false
+
+    var body: some View {
+        Button {
+            isPopoverPresented = true
+        } label: {
+            Text("Filters")
+        }
+        .accessibilityLabel("Filters")
+        .accessibilityHint("Opens a popover with filter options")
+        .accessibilityAddTraits(.isButton)
+        .popover(isPresented: $isPopoverPresented) {
+            FilterPopoverContent(isPresented: $isPopoverPresented)
+        }
+    }
+}
+
+struct FilterPopoverContent: View {
+    @Binding var isPresented: Bool
+    @State private var inStockOnly = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Text("Filter results")
+                    .font(.headline)
+                    .accessibilityAddTraits(.isHeader)
+                Spacer()
+                Button {
+                    isPresented = false
+                } label: {
+                    Image(systemName: "xmark")
+                }
+                .accessibilityLabel("Close filters popover")
+            }
+            Toggle("In stock only", isOn: $inStockOnly)
+            Button("Apply filters") {
+                isPresented = false
+            }
+            .accessibilityHint("Applies selected filters and closes the popover")
+        }
+        .padding()
+        .accessibilityElement(children: .contain)
+    }
+}</code></pre>
+            </div>
+          </section>
+          <section aria-labelledby="dev-android-heading">
+            <h2 id="dev-android-heading">Dev guidelines for Android</h2>
+            <ul>
+              <li>Apply <code>Modifier.semantics { contentDescription = "Filters" }</code> and <code>role = Role.Button</code> to the trigger so TalkBack announces it correctly. Without an explicit role, a custom composable may not be identified as interactive.</li>
+              <li>Use <code>mergeDescendants = true</code> on the popover container's semantics block if the popover header and body should be read as a single focusable unit on first entry — or omit it to keep each element individually focusable when the popover contains interactive controls.</li>
+              <li>Add a <code>customActions</code> entry for the close action so TalkBack users can dismiss the popover without having to navigate to the close button: <code>customActions = listOf(CustomAccessibilityAction("Close popover") { onDismiss(); true })</code>.</li>
+              <li>When the popover opens, ensure the first element inside receives focus by using <code>FocusRequester</code> — this mirrors the web requirement to move focus into the popover on open so screen reader users are not left on the trigger with no indication the popover appeared.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>@Composable
+fun FilterPopoverButton() {
+    var showPopover by remember { mutableStateOf(false) }
+
+    Box {
+        Button(
+            onClick = { showPopover = true },
+            modifier = Modifier.semantics {
+                contentDescription = "Filters"
+                role = Role.Button
+            }
+        ) {
+            Text("Filters")
+        }
+
+        if (showPopover) {
+            FilterPopoverContent(onDismiss = { showPopover = false })
+        }
+    }
+}
+
+@Composable
+fun FilterPopoverContent(onDismiss: () -&gt; Unit) {
+    val focusRequester = remember { FocusRequester() }
+    var inStockOnly by remember { mutableStateOf(false) }
+
+    Surface(
+        shape = MaterialTheme.shapes.medium,
+        tonalElevation = 4.dp,
+        modifier = Modifier
+            .semantics {
+                customActions = listOf(
+                    CustomAccessibilityAction("Close popover") { onDismiss(); true }
+                )
+            }
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = "Filter results",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier
+                        .focusRequester(focusRequester)
+                        .semantics { heading() }
+                )
+                IconButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.semantics {
+                        contentDescription = "Close filters popover"
+                    }
+                ) {
+                    Icon(Icons.Default.Close, contentDescription = null)
+                }
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(checked = inStockOnly, onCheckedChange = { inStockOnly = it })
+                Text("In stock only")
+            }
+            Button(onClick = onDismiss, modifier = Modifier.fillMaxWidth()) {
+                Text("Apply filters")
+            }
+        }
+    }
+
+    LaunchedEffect(Unit) { focusRequester.requestFocus() }
+}</code></pre>
+            </div>
+          </section>
           <section aria-labelledby="further-reading-heading">
             <h2 id="further-reading-heading">Further reading</h2>
             <ul>

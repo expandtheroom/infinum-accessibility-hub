@@ -221,6 +221,145 @@
               </div>
             </div>
 </section>
+          <section aria-labelledby="dev-ios-heading">
+            <h2 id="dev-ios-heading">Dev guidelines for iOS</h2>
+            <ul>
+              <li>Apply <code>.accessibilityHidden(true)</code> to every skeleton placeholder view — skeleton shapes carry no meaning and must be excluded from the VoiceOver accessibility tree entirely.</li>
+              <li>Set <code>.accessibilityLabel("Loading")</code> (or a contextual equivalent such as "Dashboard loading") on the skeleton container itself so VoiceOver has a single, meaningful announcement instead of silence or repeated traversal of hidden nodes.</li>
+              <li>Once real content is rendered, post a live-region-style announcement via <code>UIAccessibility.post(notification: .announcement, argument: "Dashboard loaded")</code> to inform VoiceOver users that loading has finished without requiring them to re-swipe.</li>
+              <li>If loading was triggered by an explicit user action (e.g. pulling to refresh or submitting a search), move VoiceOver focus directly to the heading of the newly loaded content using <code>UIAccessibility.post(notification: .screenChanged, argument: targetView)</code> rather than relying on an announcement alone.</li>
+              <li>Add <code>.accessibilityAddTraits(.updatesFrequently)</code> to the container only if you show a live progress indicator alongside the skeleton; omit it for a static shimmer, as it would cause VoiceOver to poll the element unnecessarily.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import SwiftUI
+
+struct SkeletonCardView: View {
+    let isLoading: Bool
+    let title: String
+    let body: String
+
+    var body: some View {
+        Group {
+            if isLoading {
+                VStack(alignment: .leading, spacing: 12) {
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Color(.systemGray5))
+                        .frame(height: 16)
+                        .frame(maxWidth: .infinity)
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Color(.systemGray5))
+                        .frame(height: 12)
+                        .frame(maxWidth: .infinity)
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Color(.systemGray5))
+                        .frame(height: 12)
+                        .frame(maxWidth: 220)
+                }
+                .padding()
+                // Hide individual skeleton shapes from VoiceOver
+                .accessibilityElement(children: .ignore)
+                // Expose a single, meaningful label on the container
+                .accessibilityLabel("Loading")
+            } else {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(title).font(.headline)
+                    Text(body).font(.body)
+                }
+                .padding()
+                .accessibilityElement(children: .combine)
+            }
+        }
+        .background(Color(.systemBackground))
+        .cornerRadius(8)
+        .shadow(color: .black.opacity(0.08), radius: 4, y: 2)
+        .onChange(of: isLoading) { loading in
+            if !loading {
+                // Announce that content has finished loading
+                UIAccessibility.post(
+                    notification: .announcement,
+                    argument: "Content loaded"
+                )
+            }
+        }
+    }
+}</code></pre>
+            </div>
+          </section>
+          <section aria-labelledby="dev-android-heading">
+            <h2 id="dev-android-heading">Dev guidelines for Android</h2>
+            <ul>
+              <li>Use <code>Modifier.semantics { invisibleToUser() }</code> (API 26+) — or wrap skeleton shapes in a container with <code>Modifier.clearAndSetSemantics {}</code> — to remove individual placeholder elements from the TalkBack accessibility tree.</li>
+              <li>Apply <code>Modifier.semantics { contentDescription = "Loading" }</code> on the skeleton container so TalkBack announces a single, meaningful description rather than traversing empty nodes.</li>
+              <li>When real content replaces the skeleton, use a <code>LaunchedEffect</code> to post a <code>View.announceForAccessibility("Content loaded")</code> call on the underlying Android view — or update a live-region-enabled composable — so TalkBack users know loading has completed.</li>
+              <li>If the skeleton was triggered by an explicit user action, use <code>ExperimentalComposeUiApi</code> focus-request APIs (or <code>ViewCompat.performAccessibilityAction</code> at the view level) to move TalkBack focus to the heading of the loaded content once rendering is complete.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.*
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalView
+
+@Composable
+fun SkeletonCard(isLoading: Boolean, title: String, body: String) {
+    val view = LocalView.current
+
+    LaunchedEffect(isLoading) {
+        if (!isLoading) {
+            // Announce to TalkBack that content has finished loading
+            view.announceForAccessibility("Content loaded")
+        }
+    }
+
+    if (isLoading) {
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+                // Suppress individual shapes; expose one meaningful description
+                .clearAndSetSemantics {
+                    contentDescription = "Loading"
+                },
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(0.6f)
+                    .height(16.dp)
+                    .background(MaterialTheme.colorScheme.surfaceVariant,
+                        RoundedCornerShape(4.dp))
+            )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(12.dp)
+                    .background(MaterialTheme.colorScheme.surfaceVariant,
+                        RoundedCornerShape(4.dp))
+            )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth(0.75f)
+                    .height(12.dp)
+                    .background(MaterialTheme.colorScheme.surfaceVariant,
+                        RoundedCornerShape(4.dp))
+            )
+        }
+    } else {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(text = title, style = MaterialTheme.typography.titleMedium)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(text = body, style = MaterialTheme.typography.bodyMedium)
+        }
+    }
+}</code></pre>
+            </div>
+          </section>
           <section aria-labelledby="further-reading-heading">
             <h2 id="further-reading-heading">Further reading</h2>
             <ul>

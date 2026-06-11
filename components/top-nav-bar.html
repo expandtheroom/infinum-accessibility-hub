@@ -240,6 +240,133 @@
               </div>
             </div>
 </section>
+          <section aria-labelledby="dev-ios-heading">
+            <h2 id="dev-ios-heading">Dev guidelines for iOS</h2>
+            <ul>
+              <li>Use <code>.accessibilityElement(children: .contain)</code> on the navigation bar container so VoiceOver treats each logo link, nav item, and hamburger button as separate focusable elements rather than merging them into one.</li>
+              <li>Apply <code>.accessibilityLabel("Acme Corp, Home")</code> to the logo link so VoiceOver announces both the brand name and its destination — the visual text alone may not convey it navigates home.</li>
+              <li>Mark the hamburger toggle with <code>.accessibilityAddTraits(.isButton)</code> and update its <code>.accessibilityLabel</code> dynamically between <code>"Open navigation menu"</code> and <code>"Close navigation menu"</code> to match the expanded state.</li>
+              <li>Apply <code>.accessibilityAddTraits(.isSelected)</code> — and remove it from all other items — on the active nav link so VoiceOver announces "selected" to convey the current page, mirroring the <code>aria-current="page"</code> pattern from web.</li>
+              <li>Post a <code>UIAccessibility.post(notification: .screenChanged, argument: navView)</code> when the mobile menu opens or closes so VoiceOver focus shifts into the revealed nav rather than remaining on the toggle button.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import SwiftUI
+
+struct TopNavigationBar: View {
+    @State private var menuOpen = false
+    let currentPage = "Home"
+    let navItems = ["Home", "Products", "About"]
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Link(destination: URL(string: "/")!) {
+                    Text("Acme Corp")
+                        .fontWeight(.bold)
+                }
+                .accessibilityLabel("Acme Corp, Home")
+
+                Spacer()
+
+                Button {
+                    menuOpen.toggle()
+                } label: {
+                    Image(systemName: menuOpen ? "xmark" : "line.3.horizontal")
+                        .accessibilityHidden(true)
+                }
+                .accessibilityLabel(menuOpen ? "Close navigation menu" : "Open navigation menu")
+                .accessibilityAddTraits(.isButton)
+            }
+            .padding(.horizontal)
+            .accessibilityElement(children: .contain)
+
+            if menuOpen {
+                VStack(alignment: .leading, spacing: 0) {
+                    ForEach(navItems, id: \.self) { item in
+                        Text(item)
+                            .padding()
+                            .accessibilityAddTraits(item == currentPage ? [.isButton, .isSelected] : .isButton)
+                            .accessibilityLabel(item == currentPage ? "\(item), current page" : item)
+                    }
+                }
+                .accessibilityElement(children: .contain)
+            }
+        }
+    }
+}</code></pre>
+            </div>
+          </section>
+          <section aria-labelledby="dev-android-heading">
+            <h2 id="dev-android-heading">Dev guidelines for Android</h2>
+            <ul>
+              <li>Set <code>Modifier.semantics { contentDescription = "Acme Corp, Home" }</code> on the logo composable so TalkBack announces both brand name and destination, rather than reading the raw text or image description alone.</li>
+              <li>Apply <code>Modifier.semantics { role = Role.Button }</code> on the hamburger toggle and update a state-driven <code>contentDescription</code> between <code>"Open navigation menu"</code> and <code>"Close navigation menu"</code> to reflect the current expanded state.</li>
+              <li>Use <code>stateDescription = if (isCurrentPage) "Current page" else ""</code> on each nav item to convey the active route to TalkBack, mirroring the <code>aria-current="page"</code> pattern from web.</li>
+              <li>Wrap the full nav bar in <code>Modifier.semantics { }</code> without <code>mergeDescendants = true</code> so TalkBack navigates each logo, nav item, and menu button as independent focusable targets.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import androidx.compose.runtime.*
+import androidx.compose.material3.*
+import androidx.compose.ui.semantics.*
+
+@Composable
+fun TopNavigationBar(
+    currentRoute: String = "home"
+) {
+    val navItems = listOf("Home" to "home", "Products" to "products", "About" to "about")
+    var menuOpen by remember { mutableStateOf(false) }
+
+    Column {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Acme Corp",
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.semantics {
+                    contentDescription = "Acme Corp, Home"
+                    role = Role.Button
+                }
+            )
+            IconButton(
+                onClick = { menuOpen = !menuOpen },
+                modifier = Modifier.semantics {
+                    contentDescription = if (menuOpen) "Close navigation menu" else "Open navigation menu"
+                    role = Role.Button
+                }
+            ) {
+                Icon(
+                    imageVector = if (menuOpen) Icons.Default.Close else Icons.Default.Menu,
+                    contentDescription = null
+                )
+            }
+        }
+
+        if (menuOpen) {
+            Column {
+                navItems.forEach { (label, route) -&gt;
+                    val isCurrent = route == currentRoute
+                    Text(
+                        text = label,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                            .semantics {
+                                role = Role.Button
+                                stateDescription = if (isCurrent) "Current page" else ""
+                            }
+                    )
+                }
+            }
+        }
+    }
+}</code></pre>
+            </div>
+          </section>
           <section aria-labelledby="further-reading-heading">
             <h2 id="further-reading-heading">Further reading</h2>
             <ul>

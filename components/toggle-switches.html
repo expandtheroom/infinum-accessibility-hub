@@ -240,6 +240,121 @@
             </div>
 </section>
 
+          <section aria-labelledby="dev-ios-heading">
+            <h2 id="dev-ios-heading">Dev guidelines for iOS</h2>
+            <ul>
+              <li><strong>Use SwiftUI's native <code>Toggle</code> view</strong> — it maps directly to <code>UISwitch</code> under the hood. VoiceOver announces it as "switch button, on/off" with no extra ARIA-equivalent attributes needed. Only reach for custom implementations when the design cannot be achieved with a styled native toggle.</li>
+              <li><strong>Supply a descriptive <code>.accessibilityLabel</code> when the visual label alone is insufficient</strong> — the label should describe what is being toggled, not its current state. For example, use <code>.accessibilityLabel("Email notifications")</code> not <code>"Enable email notifications"</code>. VoiceOver appends the on/off state automatically.</li>
+              <li><strong>Add <code>.accessibilityHint</code> only when the action's consequence is not obvious</strong> — for example <code>.accessibilityHint("Immediately applies the setting")</code> is useful for toggles that trigger a visible page change (e.g. dark mode), but is redundant for standard preference toggles.</li>
+              <li><strong>Announce immediate side effects with <code>UIAccessibility.post(notification: .announcement, argument:)</code></strong> — when a toggle causes a meaningful page-level change (e.g. enabling dark mode or reduced motion), post an announcement after the binding updates so VoiceOver users are informed of the resulting state.</li>
+              <li><strong>Mark decorative toggle track elements as <code>.accessibilityHidden(true)</code></strong> — if you build a custom toggle from shapes or images to achieve a specific visual, hide the decorative sub-views and surface only the combined control as a single focusable element using <code>.accessibilityElement(children: .combine)</code>.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import SwiftUI
+
+struct NotificationToggleRow: View {
+    @Binding var isEnabled: Bool
+    let label: String
+
+    var body: some View {
+        Toggle(isOn: $isEnabled) {
+            Text(label)
+        }
+        .accessibilityLabel(label)
+        .accessibilityHint("Immediately applies the setting")
+        .onChange(of: isEnabled) { newValue in
+            let message = newValue
+                ? "\(label) enabled"
+                : "\(label) disabled"
+            UIAccessibility.post(
+                notification: .announcement,
+                argument: message
+            )
+        }
+    }
+}
+
+struct SettingsView: View {
+    @State private var emailNotifications = false
+    @State private var darkMode = false
+
+    var body: some View {
+        Form {
+            NotificationToggleRow(
+                isEnabled: $emailNotifications,
+                label: "Email notifications"
+            )
+            NotificationToggleRow(
+                isEnabled: $darkMode,
+                label: "Dark mode"
+            )
+        }
+    }
+}</code></pre>
+            </div>
+          </section>
+          <section aria-labelledby="dev-android-heading">
+            <h2 id="dev-android-heading">Dev guidelines for Android</h2>
+            <ul>
+              <li><strong>Use the Material 3 <code>Switch</code> composable</strong> — it exposes the correct semantics for TalkBack out of the box, announcing the control as "switch, on/off". Avoid building custom toggle implementations unless the design specifically requires it.</li>
+              <li><strong>Set <code>Modifier.semantics { role = Role.Switch }</code> on custom toggle implementations</strong> — if you must build a custom control, declare the role explicitly so TalkBack announces it correctly. Without this, TalkBack falls back to announcing it as a generic button.</li>
+              <li><strong>Use <code>contentDescription</code> in semantics to override the announced label when needed</strong> — the description should name what is being toggled, not its current state. For example <code>contentDescription = "Email notifications"</code>. TalkBack appends "on" or "off" based on the checked state.</li>
+              <li><strong>Use <code>stateDescription</code> to communicate non-standard toggle states</strong> — for toggles that have a pending or error state (e.g. awaiting server confirmation), set <code>stateDescription = "Pending"</code> so TalkBack announces the intermediate state rather than a misleading "on" or "off".</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import androidx.compose.material3.Switch
+import androidx.compose.material3.Text
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.*
+
+@Composable
+fun NotificationToggleRow(
+    label: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -&gt; Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .semantics(mergeDescendants = true) {
+                contentDescription = label
+                role = Role.Switch
+                stateDescription = if (checked) "On" else "Off"
+            },
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(text = label)
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange
+        )
+    }
+}
+
+@Composable
+fun SettingsScreen() {
+    var emailNotifications by remember { mutableStateOf(false) }
+    var darkMode by remember { mutableStateOf(false) }
+
+    Column {
+        NotificationToggleRow(
+            label = "Email notifications",
+            checked = emailNotifications,
+            onCheckedChange = { emailNotifications = it }
+        )
+        NotificationToggleRow(
+            label = "Dark mode",
+            checked = darkMode,
+            onCheckedChange = { darkMode = it }
+        )
+    }
+}</code></pre>
+            </div>
+          </section>
           <section aria-labelledby="further-reading-heading">
             <h2 id="further-reading-heading">Further reading</h2>
             <ul>

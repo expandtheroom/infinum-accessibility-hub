@@ -247,6 +247,160 @@
               </div>
             </div>
 </section>
+          <section aria-labelledby="dev-ios-heading">
+            <h2 id="dev-ios-heading">Dev guidelines for iOS</h2>
+            <ul>
+              <li>Wrap the drawer container in a <code>Group</code> or <code>ZStack</code> and apply <code>.accessibilityElement(children: .contain)</code> so VoiceOver can navigate into individual drawer items rather than treating the whole drawer as one element.</li>
+              <li>The toggle button must have an <code>.accessibilityLabel("Open navigation menu")</code> and update to <code>"Close navigation menu"</code> when the drawer is open — VoiceOver reads the label at the moment of focus, so it must reflect the current state.</li>
+              <li>Post a <code>UIAccessibility.post(notification: .screenChanged, argument: firstDrawerItem)</code> when the drawer opens to move VoiceOver focus to the first interactive item inside the drawer; post <code>.screenChanged</code> again pointing back to the toggle button when it closes.</li>
+              <li>Apply <code>.accessibilityHidden(true)</code> to the backdrop overlay and any decorative dividers inside the drawer so VoiceOver skips non-interactive chrome and announces only navigation items.</li>
+              <li>Respect the system reduced-motion preference by checking <code>UIAccessibility.isReduceMotionEnabled</code> and skipping the slide-in animation, replacing it with an instant appear.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import SwiftUI
+
+struct SidebarDrawer: View {
+    @State private var isOpen = false
+    @Environment(\.accessibilityReduceMotion) var reduceMotion
+
+    var body: some View {
+        ZStack(alignment: .leading) {
+            // Backdrop
+            if isOpen {
+                Color.black.opacity(0.4)
+                    .ignoresSafeArea()
+                    .accessibilityHidden(true)
+                    .onTapGesture { closeDrawer() }
+            }
+
+            // Drawer panel
+            if isOpen {
+                VStack(alignment: .leading, spacing: 0) {
+                    HStack {
+                        Text("Navigation")
+                            .font(.headline)
+                        Spacer()
+                        Button(action: closeDrawer) {
+                            Image(systemName: "xmark")
+                        }
+                        .accessibilityLabel("Close navigation menu")
+                    }
+                    .padding()
+
+                    NavigationLink("Home", destination: Text("Home"))
+                        .padding(.horizontal)
+                    NavigationLink("About", destination: Text("About"))
+                        .padding(.horizontal)
+                    NavigationLink("Contact", destination: Text("Contact"))
+                        .padding(.horizontal)
+
+                    Spacer()
+                }
+                .frame(width: 280)
+                .background(Color(.systemBackground))
+                .transition(reduceMotion ? .identity : .move(edge: .leading))
+                .accessibilityElement(children: .contain)
+                .accessibilityLabel("Navigation menu")
+            }
+        }
+        .overlay(alignment: .topLeading) {
+            Button(action: openDrawer) {
+                Image(systemName: "line.3.horizontal")
+            }
+            .accessibilityLabel(isOpen ? "Close navigation menu" : "Open navigation menu")
+            .padding()
+        }
+        .animation(reduceMotion ? .none : .easeInOut(duration: 0.25), value: isOpen)
+    }
+
+    private func openDrawer() {
+        isOpen = true
+        UIAccessibility.post(notification: .screenChanged, argument: nil)
+    }
+
+    private func closeDrawer() {
+        isOpen = false
+        UIAccessibility.post(notification: .screenChanged, argument: nil)
+    }
+}</code></pre>
+            </div>
+          </section>
+          <section aria-labelledby="dev-android-heading">
+            <h2 id="dev-android-heading">Dev guidelines for Android</h2>
+            <ul>
+              <li>Use <code>ModalNavigationDrawer</code> from Material 3; its built-in <code>DrawerState</code> handles open/close state and the scrim automatically, which Compose's semantics layer can surface to TalkBack correctly.</li>
+              <li>Apply <code>Modifier.semantics { contentDescription = "Navigation menu" }</code> on the <code>ModalDrawerSheet</code> so TalkBack announces the drawer as a distinct region rather than reading each child element in isolation on first focus.</li>
+              <li>Set <code>Modifier.semantics { stateDescription = if (drawerState.isOpen) "Open" else "Closed" }</code> on the toggle button so TalkBack announces the current drawer state alongside the button label.</li>
+              <li>Wrap the main content area in a <code>Box</code> with <code>Modifier.semantics { disabled() }</code> applied conditionally while the drawer is open, preventing TalkBack from reaching background content behind the scrim.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.*
+
+@Composable
+fun AccessibleSidebarDrawer() {
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
+
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = {
+            ModalDrawerSheet(
+                modifier = Modifier.semantics {
+                    contentDescription = "Navigation menu"
+                }
+            ) {
+                Text(
+                    text = "Navigation",
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .semantics { heading() }
+                )
+                NavigationDrawerItem(
+                    label = { Text("Home") },
+                    selected = false,
+                    onClick = { scope.launch { drawerState.close() } }
+                )
+                NavigationDrawerItem(
+                    label = { Text("About") },
+                    selected = false,
+                    onClick = { scope.launch { drawerState.close() } }
+                )
+                NavigationDrawerItem(
+                    label = { Text("Contact") },
+                    selected = false,
+                    onClick = { scope.launch { drawerState.close() } }
+                )
+            }
+        }
+    ) {
+        // Main content
+        Box(
+            modifier = if (drawerState.isOpen) {
+                Modifier.semantics { disabled() }
+            } else {
+                Modifier
+            }
+        ) {
+            IconButton(
+                onClick = { scope.launch { drawerState.open() } },
+                modifier = Modifier.semantics {
+                    contentDescription = "Open navigation menu"
+                    stateDescription = if (drawerState.isOpen) "Open" else "Closed"
+                    role = Role.Button
+                }
+            ) {
+                Icon(Icons.Default.Menu, contentDescription = null)
+            }
+        }
+    }
+}</code></pre>
+            </div>
+          </section>
           <section aria-labelledby="further-reading-heading">
             <h2 id="further-reading-heading">Further reading</h2>
             <ul>

@@ -255,6 +255,120 @@
             </div>
 </section>
 
+          <section aria-labelledby="dev-ios-heading">
+            <h2 id="dev-ios-heading">Dev guidelines for iOS</h2>
+            <ul>
+              <li><strong>Use <code>.accessibilityLabel("...")</code> on the trigger button</strong> to give VoiceOver a meaningful name that includes both the field label and the current selection — for example, "Country, Australia". Without this, VoiceOver reads only the visible text of the button, which may not convey the field's purpose when a value is already selected.</li>
+              <li><strong>Use <code>.accessibilityHint("...")</code></strong> to describe what activating the control does, such as "Opens a list of options". Keep hints short and action-oriented; omit them if the label already makes the action obvious.</li>
+              <li><strong>Apply <code>.accessibilityAddTraits(.isButton)</code></strong> to custom dropdown triggers so VoiceOver announces them as buttons. The native <code>Menu</code> or <code>Picker</code> controls handle this automatically; custom views built from <code>Button</code> wrappers may need it set explicitly.</li>
+              <li><strong>Use <code>.accessibilityValue("...")</code></strong> to expose the currently selected option as a separate value announcement, for example "Australia". This allows the label and value to be announced independently, matching the pattern used by native pickers and making the current state clear without rewriting the label.</li>
+              <li><strong>Prefer SwiftUI's native <code>Picker</code> with <code>.menu</code> style</strong> for simple option lists — it inherits system accessibility support including VoiceOver, Dynamic Type, and reduced-motion respect at no extra cost. Reserve custom implementations for cases where native Picker cannot meet the design requirements.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import SwiftUI
+
+struct CountryPickerView: View {
+    @State private var selectedCountry = "Australia"
+
+    let countries = ["Australia", "Canada", "United States"]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Country")
+                .font(.headline)
+
+            Menu {
+                ForEach(countries, id: \.self) { country in
+                    Button(country) {
+                        selectedCountry = country
+                    }
+                }
+            } label: {
+                HStack {
+                    Text(selectedCountry)
+                    Spacer()
+                    Image(systemName: "chevron.down")
+                        .accessibilityHidden(true)
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 10)
+                .background(Color(.systemBackground))
+                .cornerRadius(8)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Color(.systemGray3))
+                )
+            }
+            .accessibilityLabel("Country")
+            .accessibilityValue(selectedCountry)
+            .accessibilityHint("Opens a list of countries")
+            .accessibilityAddTraits(.isButton)
+        }
+        .padding()
+    }
+}</code></pre>
+            </div>
+          </section>
+          <section aria-labelledby="dev-android-heading">
+            <h2 id="dev-android-heading">Dev guidelines for Android</h2>
+            <ul>
+              <li><strong>Use <code>Modifier.semantics { contentDescription = "..." }</code></strong> on custom dropdown triggers to give TalkBack a meaningful announcement that combines the field label and current value — for example, "Country, Australia". Without this, TalkBack may read only the visible button text, which can be ambiguous.</li>
+              <li><strong>Set <code>role = Role.Button</code></strong> in the semantics block of custom dropdown triggers so TalkBack announces the control as a button. Exposed Drop-Down Menus (<code>ExposedDropdownMenuBox</code>) handle role semantics automatically; custom implementations built from <code>Box</code> or <code>Surface</code> require it explicitly.</li>
+              <li><strong>Use <code>stateDescription = "..."</code></strong> to expose the currently selected option as a separate state string. This allows TalkBack to announce the label and the selected value as distinct pieces of information, matching the behaviour of native selection controls.</li>
+              <li><strong>Prefer <code>ExposedDropdownMenuBox</code> with <code>ExposedDropdownMenuBoxScope</code></strong> for standard select patterns — it handles expand/collapse semantics, keyboard navigation, and TalkBack announcements automatically. Only build a custom implementation when the native component cannot satisfy the design or interaction requirements.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.*
+
+@Composable
+fun CountryDropdown() {
+    val countries = listOf("Australia", "Canada", "United States")
+    var expanded by remember { mutableStateOf(false) }
+    var selectedCountry by remember { mutableStateOf(countries[0]) }
+
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = !expanded }
+    ) {
+        OutlinedTextField(
+            value = selectedCountry,
+            onValueChange = {},
+            readOnly = true,
+            label = { Text("Country") },
+            trailingIcon = {
+                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+            },
+            modifier = Modifier
+                .menuAnchor()
+                .semantics {
+                    contentDescription = "Country, $selectedCountry"
+                    stateDescription = selectedCountry
+                    role = Role.Button
+                }
+        )
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            countries.forEach { country -&gt;
+                DropdownMenuItem(
+                    text = { Text(country) },
+                    onClick = {
+                        selectedCountry = country
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
+}</code></pre>
+            </div>
+          </section>
           <section aria-labelledby="further-reading-heading">
             <h2 id="further-reading-heading">Further reading</h2>
             <ul>

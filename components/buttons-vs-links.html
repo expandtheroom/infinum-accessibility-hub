@@ -230,6 +230,120 @@
             </div>
 </section>
 
+          <section aria-labelledby="dev-ios-heading">
+            <h2 id="dev-ios-heading">Dev guidelines for iOS</h2>
+            <ul>
+              <li><strong>Use Button for actions and NavigationLink (or Link) for navigation — never swap them.</strong> VoiceOver announces a Button as "button" and a Link as "link", setting the correct expectation for what will happen when the user activates the element. Using the wrong type misleads users about the outcome.</li>
+              <li><strong>Provide an explicit <code>.accessibilityLabel</code> for icon-only buttons.</strong> When a button contains only an SF Symbol or image with no visible text, VoiceOver will read the image asset name or nothing at all. Override this with <code>.accessibilityLabel("Close dialog")</code> so users hear a meaningful action description instead.</li>
+              <li><strong>Use <code>.accessibilityAddTraits(.isLink)</code> when a custom view behaves like a link.</strong> If you build a tappable row or custom component that navigates to a new screen, add the <code>.isLink</code> trait so VoiceOver announces it correctly. For action controls, the default <code>.isButton</code> trait on Button is applied automatically — do not remove it.</li>
+              <li><strong>Communicate toggle state with <code>.accessibilityValue</code> or <code>.accessibilityAddTraits(.isSelected)</code>.</strong> For a button that toggles (e.g. a mute button), expose current state by setting <code>.accessibilityValue("Muted")</code> or <code>.accessibilityValue("Unmuted")</code>. The label should stay constant — only the value changes — mirroring the <code>aria-pressed</code> pattern on web.</li>
+              <li><strong>Hide decorative icons with <code>.accessibilityHidden(true)</code>.</strong> If a button contains both a visible text label and a decorative icon, mark the icon <code>.accessibilityHidden(true)</code> so VoiceOver does not announce the image name alongside the label.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import SwiftUI
+
+struct ActionButtonsView: View {
+    @State private var isMuted = false
+    @State private var isLoading = false
+
+    var body: some View {
+        VStack(spacing: 16) {
+
+            // Standard action button
+            Button("Save changes") {
+                isLoading = true
+                saveChanges()
+            }
+            .accessibilityLabel("Save changes")
+            .accessibilityHint("Saves your current form input")
+
+            // Icon-only button — explicit label required
+            Button {
+                deleteItem()
+            } label: {
+                Image(systemName: "trash")
+                    .accessibilityHidden(true)
+            }
+            .accessibilityLabel("Delete item")
+
+            // Toggle button — state communicated via accessibilityValue
+            Button {
+                isMuted.toggle()
+            } label: {
+                Image(systemName: isMuted ? "speaker.slash" : "speaker.wave.2")
+                    .accessibilityHidden(true)
+            }
+            .accessibilityLabel("Mute")
+            .accessibilityValue(isMuted ? "On" : "Off")
+
+            // Navigation link — announces as "link" to VoiceOver
+            NavigationLink("View order history") {
+                OrderHistoryView()
+            }
+        }
+    }
+}</code></pre>
+            </div>
+          </section>
+          <section aria-labelledby="dev-android-heading">
+            <h2 id="dev-android-heading">Dev guidelines for Android</h2>
+            <ul>
+              <li><strong>Use Button for actions and a clickable with <code>Role.Button</code> or a text link with <code>Role.Image</code> only where semantics match.</strong> For navigation, prefer standard navigation components or annotate custom tappable elements with the correct role so TalkBack announces them accurately.</li>
+              <li><strong>Override TalkBack announcements on icon-only buttons with <code>Modifier.semantics { contentDescription = "..." }</code>.</strong> Without a content description, TalkBack reads nothing or the image resource name. Provide a clear action-oriented description — e.g. <code>contentDescription = "Delete item"</code>.</li>
+              <li><strong>Use <code>stateDescription</code> in semantics to communicate toggle state.</strong> For a button that toggles between two states (e.g. mute/unmute), set <code>stateDescription = if (isMuted) "Muted" else "Unmuted"</code> inside a <code>Modifier.semantics</code> block. This is the Compose equivalent of <code>aria-pressed</code> on web.</li>
+              <li><strong>Mark non-interactive or decorative elements with <code>Modifier.semantics { invisibleToUser() }</code> or <code>clearAndSetSemantics {}</code>.</strong> Decorative icons inside a button that already has a content description should be hidden from TalkBack to prevent redundant announcements.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.*
+
+@Composable
+fun ActionButtonsDemo() {
+    var isMuted by remember { mutableStateOf(false) }
+
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+
+        // Standard action button — label read from text content
+        Button(onClick = { saveChanges() }) {
+            Text("Save changes")
+        }
+
+        // Icon-only button — explicit content description required
+        IconButton(
+            onClick = { deleteItem() },
+            modifier = Modifier.semantics {
+                contentDescription = "Delete item"
+                role = Role.Button
+            }
+        ) {
+            Icon(
+                imageVector = Icons.Default.Delete,
+                contentDescription = null // hidden; parent provides label
+            )
+        }
+
+        // Toggle button — state communicated via stateDescription
+        IconButton(
+            onClick = { isMuted = !isMuted },
+            modifier = Modifier.semantics {
+                contentDescription = "Mute"
+                stateDescription = if (isMuted) "On" else "Off"
+                role = Role.Button
+            }
+        ) {
+            Icon(
+                imageVector = if (isMuted) Icons.Default.VolumeOff else Icons.Default.VolumeUp,
+                contentDescription = null
+            )
+        }
+    }
+}</code></pre>
+            </div>
+          </section>
           <section aria-labelledby="further-reading-heading">
             <h2 id="further-reading-heading">Further reading</h2>
             <ul>

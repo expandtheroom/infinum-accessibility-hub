@@ -225,6 +225,120 @@
               </div>
             </div>
 </section>
+          <section aria-labelledby="dev-ios-heading">
+            <h2 id="dev-ios-heading">Dev guidelines for iOS</h2>
+            <ul>
+              <li>Use <code>UIAccessibility.post(notification: .announcement, argument: "...")</code> to announce urgent banners (errors, session expiry) immediately. For non-urgent informational banners, delay the announcement by a short interval so it does not interrupt the user's current action.</li>
+              <li>Apply <code>.accessibilityElement(children: .combine)</code> to the banner container so VoiceOver reads the icon label, severity prefix, and message as a single, coherent unit instead of separate focusable elements.</li>
+              <li>Mark decorative status icons with <code>.accessibilityHidden(true)</code> when the severity type is already conveyed in the text (e.g. "Error: your session has expired") to prevent VoiceOver from double-announcing the type.</li>
+              <li>The dismiss button must have an explicit <code>.accessibilityLabel("Dismiss banner")</code>. A bare × glyph with no label will be read as "button" with no context by VoiceOver.</li>
+              <li>Add <code>.accessibilityAddTraits(.updatesFrequently)</code> if the banner message can change while it is on screen (e.g. a countdown timer), so VoiceOver knows to re-read the element when its content updates.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import SwiftUI
+
+struct AccessibleBanner: View {
+    let severity: String   // "Error", "Warning", "Info", "Success"
+    let message: String
+    var onDismiss: (() -&gt; Void)? = nil
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: iconName)
+                .accessibilityHidden(true)
+            Text("\(severity): \(message)")
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer()
+            if let onDismiss {
+                Button(action: onDismiss) {
+                    Image(systemName: "xmark")
+                        .accessibilityHidden(true)
+                }
+                .accessibilityLabel("Dismiss banner")
+            }
+        }
+        .padding()
+        .accessibilityElement(children: .combine)
+        .onAppear {
+            UIAccessibility.post(
+                notification: .announcement,
+                argument: "\(severity): \(message)"
+            )
+        }
+    }
+
+    private var iconName: String {
+        switch severity {
+        case "Error":   return "xmark.circle.fill"
+        case "Warning": return "exclamationmark.triangle.fill"
+        case "Success": return "checkmark.circle.fill"
+        default:        return "info.circle.fill"
+        }
+    }
+}</code></pre>
+            </div>
+          </section>
+          <section aria-labelledby="dev-android-heading">
+            <h2 id="dev-android-heading">Dev guidelines for Android</h2>
+            <ul>
+              <li>Use <code>Modifier.semantics { liveRegion = LiveRegionMode.Assertive }</code> for urgent banners (errors, session expiry) so TalkBack interrupts current speech and reads the message immediately. Use <code>LiveRegionMode.Polite</code> for informational banners so the announcement waits for current speech to finish.</li>
+              <li>Apply <code>Modifier.semantics { mergeDescendants = true }</code> to the banner container so TalkBack reads the severity label, icon description, and message body as a single announcement rather than focusing each child element separately.</li>
+              <li>Set <code>contentDescription</code> on the banner container to compose the full announcement string (e.g. <code>"Error: your session has expired"</code>). This ensures the severity type is included even when the icon is hidden from the accessibility tree.</li>
+              <li>The dismiss button must have a <code>contentDescription = "Dismiss banner"</code> in its semantics. An icon-only button with no description will be announced as unlabelled by TalkBack.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.semantics.*
+
+enum class BannerSeverity { Info, Warning, Error, Success }
+
+@Composable
+fun AccessibleBanner(
+    severity: BannerSeverity,
+    message: String,
+    onDismiss: (() -&gt; Unit)? = null
+) {
+    val severityLabel = severity.name
+    val liveRegion = if (severity == BannerSeverity.Error) {
+        LiveRegionMode.Assertive
+    } else {
+        LiveRegionMode.Polite
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+            .semantics(mergeDescendants = true) {
+                liveRegion = liveRegion
+                contentDescription = "$severityLabel: $message"
+            },
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = severityIcon(severity),
+            contentDescription = null   // hidden; full label on container
+        )
+        Spacer(Modifier.width(12.dp))
+        Text(
+            text = "$severityLabel: $message",
+            modifier = Modifier.weight(1f)
+        )
+        if (onDismiss != null) {
+            IconButton(onClick = onDismiss) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Dismiss banner"
+                )
+            }
+        }
+    }
+}</code></pre>
+            </div>
+          </section>
           <section aria-labelledby="further-reading-heading">
             <h2 id="further-reading-heading">Further reading</h2>
             <ul>

@@ -246,6 +246,90 @@
               </div>
             </div>
 </section>
+          <section aria-labelledby="dev-ios-heading">
+            <h2 id="dev-ios-heading">Dev guidelines for iOS</h2>
+            <ul>
+              <li>Use <code>.accessibilityElement(children: .combine)</code> on a list row container to merge its child views (e.g. icon, title, and subtitle) into a single VoiceOver focus point, reducing swipe count and producing a coherent announcement.</li>
+              <li>Set <code>.accessibilityLabel("...")</code> on combined rows to provide a clean, natural-language summary — for example "WCAG 2.2, Conformance level AA" rather than reading each child value separately.</li>
+              <li>Mark interactive rows (those that trigger navigation or an action) with <code>.accessibilityAddTraits(.isButton)</code> so VoiceOver announces "button" and users understand a tap will do something.</li>
+              <li>For rows that show a selected or checked state, use <code>.accessibilityValue("Selected")</code> or <code>.accessibilityAddTraits(.isSelected)</code> to communicate current state; do not rely on a visual tick alone.</li>
+              <li>Use <code>.accessibilityHidden(true)</code> on purely decorative elements within a row (e.g. a background stripe or separator line) so VoiceOver skips them and focuses on meaningful content.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import SwiftUI
+
+struct AccessibilityItem: Identifiable {
+    let id = UUID()
+    let term: String
+    let value: String
+}
+
+struct AccessibleListView: View {
+    let items: [AccessibilityItem] = [
+        AccessibilityItem(term: "WCAG version", value: "2.2"),
+        AccessibilityItem(term: "Conformance level", value: "AA"),
+        AccessibilityItem(term: "Test with screen readers", value: "Required")
+    ]
+
+    var body: some View {
+        List(items) { item in
+            HStack {
+                Text(item.term)
+                    .fontWeight(.semibold)
+                Spacer()
+                Text(item.value)
+                    .foregroundColor(.secondary)
+            }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("\(item.term), \(item.value)")
+        }
+        .accessibilityLabel("Accessibility checklist")
+    }
+}</code></pre>
+            </div>
+          </section>
+          <section aria-labelledby="dev-android-heading">
+            <h2 id="dev-android-heading">Dev guidelines for Android</h2>
+            <ul>
+              <li>Apply <code>Modifier.semantics(mergeDescendants = true) { }</code> on a list item container to collapse its child elements into one TalkBack focus target, mirroring the iOS <code>.combine</code> behaviour and reducing unnecessary swipe steps.</li>
+              <li>Use <code>contentDescription = "..."</code> inside a <code>semantics</code> block to provide a single, natural-language summary for combined rows — write it as a complete phrase TalkBack can read without further processing.</li>
+              <li>Mark interactive list items with <code>role = Role.Button</code> (or <code>Role.Tab</code> for tab-style lists) so TalkBack appends the correct role to the announcement and sets user expectations before a tap.</li>
+              <li>For selectable or checkable rows, set <code>stateDescription = "Selected"</code> or <code>stateDescription = "Not selected"</code> inside the semantics block so TalkBack announces current state dynamically when it changes.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.*
+
+data class AccessibilityItem(val term: String, val value: String)
+
+@Composable
+fun AccessibleList(items: List&lt;AccessibilityItem&gt;) {
+    LazyColumn {
+        items(items) { item -&gt;
+            androidx.compose.foundation.layout.Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .semantics(mergeDescendants = true) {
+                        contentDescription = "${item.term}, ${item.value}"
+                    }
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+            ) {
+                Text(text = item.term, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
+                Text(text = item.value, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            HorizontalDivider()
+        }
+    }
+}</code></pre>
+            </div>
+          </section>
           <section aria-labelledby="further-reading-heading">
             <h2 id="further-reading-heading">Further reading</h2>
             <ul>

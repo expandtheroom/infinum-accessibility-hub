@@ -239,6 +239,101 @@
               </div>
             </div>
 </section>
+          <section aria-labelledby="dev-ios-heading">
+            <h2 id="dev-ios-heading">Dev guidelines for iOS</h2>
+            <ul>
+              <li>Use <code>role="dialog"</code> equivalent by presenting the sheet as a modal: wrap sheet content in a container and apply <code>.accessibilityViewIsModal(true)</code> so VoiceOver ignores elements behind the sheet.</li>
+              <li>Move VoiceOver focus into the sheet on open using <code>UIAccessibility.post(notification: .screenChanged, argument: firstFocusableElement)</code> — without this, VoiceOver remains on the trigger and users miss the sheet entirely.</li>
+              <li>Give the sheet a descriptive label with <code>.accessibilityLabel("Share options")</code> on the container, and add a close button with <code>.accessibilityLabel("Close Share options")</code> as the primary dismissal mechanism alongside drag and backdrop gestures.</li>
+              <li>Provide a custom dismiss action for VoiceOver users who rely on the scrub gesture: implement <code>accessibilityPerformEscape()</code> in the hosting view controller to close the sheet when the Z-gesture is performed.</li>
+              <li>Announce sheet appearance to assistive technologies that may not automatically receive focus: <code>UIAccessibility.post(notification: .announcement, argument: "Share options opened")</code> can supplement the <code>.screenChanged</code> notification in complex navigation hierarchies.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>struct ShareBottomSheet: View {
+    @Binding var isPresented: Bool
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Text("Share")
+                    .font(.headline)
+                    .accessibilityAddTraits(.isHeader)
+                Spacer()
+                Button {
+                    isPresented = false
+                } label: {
+                    Image(systemName: "xmark")
+                }
+                .accessibilityLabel("Close Share options")
+            }
+
+            Button("Copy link") { /* action */ }
+                .accessibilityHint("Copies the link to your clipboard")
+
+            Button("Send via email") { /* action */ }
+                .accessibilityHint("Opens your email app with the link pre-filled")
+        }
+        .padding()
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Share options")
+        .accessibilityViewIsModal(true)
+    }
+}</code></pre>
+            </div>
+          </section>
+          <section aria-labelledby="dev-android-heading">
+            <h2 id="dev-android-heading">Dev guidelines for Android</h2>
+            <ul>
+              <li>Use Jetpack Compose's <code>ModalBottomSheet</code> from Material 3, which handles TalkBack focus routing and backdrop semantics automatically — avoid building a custom implementation unless the standard component cannot meet your design requirements.</li>
+              <li>Apply <code>Modifier.semantics { contentDescription = "Share options" }</code> to the sheet container so TalkBack announces the surface correctly when focus enters it.</li>
+              <li>Ensure the close button carries a clear content description: <code>Modifier.semantics { contentDescription = "Close Share options" }</code> — icon-only buttons without labels are a common TalkBack failure point.</li>
+              <li>Use <code>LiveRegionMode.Polite</code> on any dynamic content within the sheet (e.g. a loading state or confirmation message) so TalkBack announces changes without interrupting the user's current interaction.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>@Composable
+fun ShareBottomSheet(
+    onDismiss: () -&gt; Unit
+) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        modifier = Modifier.semantics {
+            contentDescription = "Share options"
+        }
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text(
+                text = "Share",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.semantics { heading() }
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            TextButton(
+                onClick = { /* copy action */ },
+                modifier = Modifier.semantics {
+                    contentDescription = "Copy link"
+                }
+            ) { Text("Copy link") }
+            TextButton(
+                onClick = { /* email action */ },
+                modifier = Modifier.semantics {
+                    contentDescription = "Send via email"
+                }
+            ) { Text("Send via email") }
+            IconButton(
+                onClick = onDismiss,
+                modifier = Modifier.semantics {
+                    contentDescription = "Close Share options"
+                }
+            ) {
+                Icon(Icons.Default.Close, contentDescription = null)
+            }
+        }
+    }
+}</code></pre>
+            </div>
+          </section>
           <section aria-labelledby="further-reading-heading">
             <h2 id="further-reading-heading">Further reading</h2>
             <ul>

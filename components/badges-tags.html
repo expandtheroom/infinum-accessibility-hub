@@ -229,6 +229,93 @@
               </div>
             </div>
 </section>
+          <section aria-labelledby="dev-ios-heading">
+            <h2 id="dev-ios-heading">Dev guidelines for iOS</h2>
+            <ul>
+              <li>Decorative badges (e.g. a colored dot that duplicates visible text) must use <code>.accessibilityHidden(true)</code> so VoiceOver ignores them entirely.</li>
+              <li>Count badges paired with a parent icon should use <code>.accessibilityElement(children: .combine)</code> on the containing view so VoiceOver reads the icon and count as a single element, then apply <code>.accessibilityLabel("Notifications, 3 unread")</code> to give the combined element a meaningful name.</li>
+              <li>Removable chips must include an <code>accessibilityCustomActions</code> block exposing a "Remove" action so VoiceOver users can trigger removal without navigating to a separate button inside the chip.</li>
+              <li>Dynamic count updates (e.g. a badge incrementing in real time) should post a UIAccessibility announcement via <code>UIAccessibility.post(notification: .announcement, argument: "3 unread notifications")</code> so VoiceOver reads the new value without the user having to navigate back to the badge.</li>
+              <li>Interactive filter chips that toggle a selected state must use <code>.accessibilityAddTraits(.isSelected)</code> when active and remove it when inactive, mirroring the <code>aria-pressed</code> pattern used on the web.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import SwiftUI
+
+// Removable chip with a combined accessibility element and custom remove action
+struct AccessibleChip: View {
+    let label: String
+    var onRemove: () -&gt; Void
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Text(label)
+                .font(.subheadline)
+            Button(action: onRemove) {
+                Image(systemName: "xmark.circle.fill")
+                    .foregroundColor(.secondary)
+            }
+            .accessibilityLabel("Remove \(label)")
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 6)
+        .background(Color(.systemGray5))
+        .clipShape(Capsule())
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(label)
+        .accessibilityCustomActions([
+            AccessibilityCustomAction("Remove") { _ in
+                onRemove()
+                return true
+            }
+        ])
+    }
+}</code></pre>
+            </div>
+          </section>
+          <section aria-labelledby="dev-android-heading">
+            <h2 id="dev-android-heading">Dev guidelines for Android</h2>
+            <ul>
+              <li>Decorative badges that duplicate adjacent visible text must use <code>Modifier.semantics { invisibleToUser() }</code> or <code>Modifier.clearAndSetSemantics {}</code> so TalkBack does not announce them redundantly.</li>
+              <li>Count badges paired with an icon should use <code>Modifier.semantics(mergeDescendants = true)</code> on the containing layout and set <code>contentDescription = "Notifications, 3 unread"</code> so TalkBack reads the combined element as a single announcement.</li>
+              <li>Removable chips must expose a <code>customActions</code> entry for the remove action inside the chip's <code>semantics</code> block so TalkBack users can trigger removal without separately navigating to the dismiss button.</li>
+              <li>Interactive filter chips that toggle a selected state must set <code>stateDescription = "Selected"</code> or <code>"Not selected"</code> inside the <code>semantics</code> block, and include <code>role = Role.Checkbox</code> when behavior matches that pattern.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import androidx.compose.material3.SuggestionChip
+import androidx.compose.ui.semantics.*
+
+// Removable chip with merged semantics and a custom remove action
+@Composable
+fun AccessibleChip(
+    label: String,
+    onRemove: () -&gt; Unit
+) {
+    SuggestionChip(
+        onClick = { /* primary tap action */ },
+        label = { Text(label) },
+        icon = {
+            IconButton(onClick = onRemove) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Remove $label"
+                )
+            }
+        },
+        modifier = Modifier.semantics(mergeDescendants = true) {
+            contentDescription = label
+            customActions = listOf(
+                CustomAccessibilityAction(label = "Remove $label") {
+                    onRemove()
+                    true
+                }
+            )
+        }
+    )
+}</code></pre>
+            </div>
+          </section>
           <section aria-labelledby="further-reading-heading">
             <h2 id="further-reading-heading">Further reading</h2>
             <ul>

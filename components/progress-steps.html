@@ -251,6 +251,160 @@
               </div>
             </div>
 </section>
+          <section aria-labelledby="dev-ios-heading">
+            <h2 id="dev-ios-heading">Dev guidelines for iOS</h2>
+            <ul>
+              <li>Use <code>.accessibilityElement(children: .contain)</code> on the stepper container so each step remains a separate focusable unit — VoiceOver can then move through steps one at a time and announce step count from the enclosing list.</li>
+              <li>Apply <code>.accessibilityLabel("Step 1 of 4: Cart, current step")</code> (or equivalent) to the active step so VoiceOver announces its position, name, and status in a single utterance — do not rely on visual number badges alone.</li>
+              <li>Mark completed steps with <code>.accessibilityValue("Completed")</code> and upcoming steps with <code>.accessibilityValue("Not started")</code> so state is programmatically available, not just conveyed through color or icons.</li>
+              <li>Apply <code>.accessibilityHidden(true)</code> to connector lines and decorative step-circle backgrounds so VoiceOver skips purely structural chrome.</li>
+              <li>When the user advances to a new step and content updates in-place, post a VoiceOver announcement with <code>UIAccessibility.post(notification: .screenChanged, argument: stepHeadingView)</code> to move focus to the new step's heading or first field.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>struct CheckoutProgressSteps: View {
+    let steps = ["Cart", "Shipping", "Payment", "Confirm"]
+    let currentStep: Int // 0-indexed
+
+    var body: some View {
+        HStack(spacing: 0) {
+            ForEach(steps.indices, id: \.self) { index in
+                StepItem(
+                    label: steps[index],
+                    stepNumber: index + 1,
+                    totalSteps: steps.count,
+                    state: stepState(for: index)
+                )
+                if index &lt; steps.count - 1 {
+                    Rectangle()
+                        .frame(height: 2)
+                        .foregroundColor(index &lt; currentStep ? .blue : .gray)
+                        .accessibilityHidden(true)
+                }
+            }
+        }
+        .accessibilityElement(children: .contain)
+    }
+
+    func stepState(for index: Int) -&gt; StepState {
+        if index &lt; currentStep { return .completed }
+        if index == currentStep { return .current }
+        return .upcoming
+    }
+}
+
+struct StepItem: View {
+    let label: String
+    let stepNumber: Int
+    let totalSteps: Int
+    let state: StepState
+
+    var body: some View {
+        VStack(spacing: 4) {
+            Circle()
+                .frame(width: 32, height: 32)
+                .foregroundColor(state == .upcoming ? .clear : .blue)
+                .overlay(
+                    Text("\(stepNumber)")
+                        .foregroundColor(state == .upcoming ? .gray : .white)
+                )
+                .accessibilityHidden(true)
+            Text(label)
+                .font(.caption)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Step \(stepNumber) of \(totalSteps): \(label)")
+        .accessibilityValue(state.accessibilityValue)
+    }
+}
+
+enum StepState {
+    case completed, current, upcoming
+    var accessibilityValue: String {
+        switch self {
+        case .completed: return "Completed"
+        case .current:   return "Current step"
+        case .upcoming:  return "Not started"
+        }
+    }
+}</code></pre>
+            </div>
+          </section>
+          <section aria-labelledby="dev-android-heading">
+            <h2 id="dev-android-heading">Dev guidelines for Android</h2>
+            <ul>
+              <li>Use <code>Modifier.semantics { contentDescription = "Step $index of $total: $label. $stateDescription" }</code> on each step item so TalkBack announces position, name, and completion state in one utterance.</li>
+              <li>Set <code>stateDescription = "Completed"</code>, <code>"Current step"</code>, or <code>"Not started"</code> on each step so state is programmatically conveyed — not only through color or a tick icon.</li>
+              <li>Use <code>Modifier.clearAndSetSemantics { }</code> on connector lines and decorative step-circle backgrounds so TalkBack ignores purely structural chrome.</li>
+              <li>When the user advances to a new step and content updates in-place, emit a <code>LiveRegionMode.Polite</code> announcement via a semantics node or use <code>View.announceForAccessibility()</code> to notify users of the context change and direct focus to the new step heading or first field.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>@Composable
+fun CheckoutProgressSteps(
+    steps: List&lt;String&gt;,
+    currentStep: Int
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        steps.forEachIndexed { index, label -&gt;
+            val state = when {
+                index &lt; currentStep -&gt; "Completed"
+                index == currentStep -&gt; "Current step"
+                else -&gt; "Not started"
+            }
+            StepItem(
+                label = label,
+                stepNumber = index + 1,
+                totalSteps = steps.size,
+                stateDescription = state
+            )
+            if (index &lt; steps.size - 1) {
+                Divider(
+                    modifier = Modifier
+                        .weight(1f)
+                        .height(2.dp)
+                        .clearAndSetSemantics { },
+                    color = if (index &lt; currentStep) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.outlineVariant
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun StepItem(
+    label: String,
+    stepNumber: Int,
+    totalSteps: Int,
+    stateDescription: String
+) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.semantics(mergeDescendants = true) {
+            contentDescription = "Step $stepNumber of $totalSteps: $label"
+            this.stateDescription = stateDescription
+        }
+    ) {
+        Box(
+            modifier = Modifier
+                .size(32.dp)
+                .clearAndSetSemantics { },
+            contentAlignment = Alignment.Center
+        ) {
+            Text(text = stepNumber.toString())
+        }
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall
+        )
+    }
+}</code></pre>
+            </div>
+          </section>
           <section aria-labelledby="further-reading-heading">
             <h2 id="further-reading-heading">Further reading</h2>
             <ul>

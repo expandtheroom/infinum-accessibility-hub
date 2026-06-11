@@ -224,6 +224,126 @@
               </div>
             </div>
 </section>
+          <section aria-labelledby="dev-ios-heading">
+            <h2 id="dev-ios-heading">Dev guidelines for iOS</h2>
+            <ul>
+              <li>There is no direct equivalent of a skip link on iOS — VoiceOver users navigate by swiping through elements sequentially. Reduce this overhead by marking your top navigation bar container with <code>.accessibilityElement(children: .contain)</code> so it remains a discrete, skippable region rather than a flat list of individual focusable items.</li>
+              <li>Apply <code>.accessibilityAddTraits(.isHeader)</code> to your main content heading so VoiceOver users can jump directly to it using the Headings rotor, bypassing the navigation region entirely.</li>
+              <li>Use <code>UIAccessibility.post(notification: .screenChanged, argument: mainContentView)</code> on view appearance (or after navigation events in SPAs) to move VoiceOver focus directly to the main content region, mirroring the intent of a skip link.</li>
+              <li>Mark purely decorative or repeated chrome elements (logo images, divider lines) with <code>.accessibilityHidden(true)</code> so they do not add to the swipe count VoiceOver users must traverse to reach content.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import SwiftUI
+
+struct ContentView: View {
+    var body: some View {
+        VStack(spacing: 0) {
+            NavigationBarView()
+            MainContentView()
+        }
+    }
+}
+
+struct NavigationBarView: View {
+    var body: some View {
+        HStack {
+            Image("logo")
+                .accessibilityHidden(true)
+            Text("My App")
+                .font(.headline)
+            Spacer()
+            Button("Menu") { }
+        }
+        .padding()
+        .background(Color(.systemBackground))
+        // Keep nav items as separate focusable elements within this region
+        .accessibilityElement(children: .contain)
+    }
+}
+
+struct MainContentView: View {
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                Text("Main Content")
+                    .font(.largeTitle)
+                    // Marks this as a heading for the VoiceOver Headings rotor,
+                    // letting users jump here directly — equivalent to skip-link target
+                    .accessibilityAddTraits(.isHeader)
+                Text("Page content begins here.")
+            }
+            .padding()
+        }
+        .onAppear {
+            // Move VoiceOver focus to main content on view load,
+            // mirroring the behaviour of a skip link
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                UIAccessibility.post(
+                    notification: .screenChanged,
+                    argument: nil
+                )
+            }
+        }
+    }
+}</code></pre>
+            </div>
+          </section>
+          <section aria-labelledby="dev-android-heading">
+            <h2 id="dev-android-heading">Dev guidelines for Android</h2>
+            <ul>
+              <li>There is no direct equivalent of a skip link on Android — TalkBack users navigate linearly through focusable elements. Reduce repetitive navigation by using <code>mergeDescendants = true</code> on your top app bar's semantics so the entire bar is a single focusable unit rather than individual items.</li>
+              <li>Mark your main content heading with <code>Modifier.semantics { heading() }</code> so TalkBack users can jump to it using the Headings navigation gesture, bypassing the app bar and navigation drawer.</li>
+              <li>Use <code>LaunchedEffect</code> with a <code>FocusRequester</code> to programmatically move TalkBack focus to the main content composable when a screen loads or a navigation event occurs.</li>
+              <li>Apply <code>Modifier.semantics { invisibleToUser() }</code> (or <code>clearAndSetSemantics {}</code>) to decorative elements like dividers and background images so they are not announced by TalkBack and do not add unnecessary swipe steps.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.semantics.*
+import androidx.compose.ui.unit.dp
+
+@Composable
+fun SkipToContentScreen() {
+    val focusRequester = remember { FocusRequester() }
+
+    Column {
+        // Top app bar merged into a single TalkBack focus stop
+        TopAppBar(
+            title = { Text("My App") },
+            modifier = Modifier.semantics(mergeDescendants = true) {}
+        )
+
+        // Main content heading marked as a heading for TalkBack Headings navigation,
+        // equivalent to the target of a skip link
+        Text(
+            text = "Main Content",
+            style = MaterialTheme.typography.headlineMedium,
+            modifier = Modifier
+                .padding(16.dp)
+                .focusRequester(focusRequester)
+                .semantics { heading() }
+        )
+
+        Text(
+            text = "Page content begins here.",
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
+    }
+
+    // Move TalkBack focus to main content heading on screen load,
+    // mirroring the behaviour of a skip link
+    LaunchedEffect(Unit) {
+        focusRequester.requestFocus()
+    }
+}</code></pre>
+            </div>
+          </section>
           <section aria-labelledby="further-reading-heading">
             <h2 id="further-reading-heading">Further reading</h2>
             <ul>

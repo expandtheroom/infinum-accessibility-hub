@@ -253,6 +253,127 @@
               </div>
             </div>
 </section>
+          <section aria-labelledby="dev-ios-heading">
+            <h2 id="dev-ios-heading">Dev guidelines for iOS</h2>
+            <ul>
+              <li>Use <code>.accessibilityLabel("...")</code> on each row container to give VoiceOver a concise summary that includes the row header and key cell values — for example, "Americas, 12,400 units, $2.1M revenue" — so users don't have to navigate cell by cell to understand the row.</li>
+              <li>Apply <code>.accessibilityElement(children: .combine)</code> to a row <code>HStack</code> only when all cells form a single meaningful unit; use <code>.contain</code> when users need to navigate individual cells (e.g. interactive or copy-able values).</li>
+              <li>Mark column header text views with <code>.accessibilityAddTraits(.isHeader)</code> so VoiceOver announces them as headings and users can jump between them using the rotor.</li>
+              <li>For sortable column headers, expose sort state with <code>.accessibilityValue("sorted ascending")</code> or <code>.accessibilityValue("sorted descending")</code> on the header, and use <code>.accessibilityHint("Double-tap to sort")</code> on the sort button so the action is discoverable.</li>
+              <li>Use <code>.accessibilityHidden(true)</code> on purely decorative elements such as row-separator dividers and zebra-stripe background shapes so they are not announced by VoiceOver.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import SwiftUI
+
+struct SalesTableRow: Identifiable {
+    let id = UUID()
+    let region: String
+    let units: String
+    let revenue: String
+}
+
+struct SalesTableView: View {
+    let rows: [SalesTableRow]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            // Column headers
+            HStack {
+                Text("Region").frame(maxWidth: .infinity, alignment: .leading)
+                Text("Units sold").frame(maxWidth: .infinity, alignment: .trailing)
+                Text("Revenue").frame(maxWidth: .infinity, alignment: .trailing)
+            }
+            .font(.headline)
+            .padding(.vertical, 8)
+            .accessibilityElement(children: .contain)
+            .accessibilityAddTraits(.isHeader)
+
+            Divider().accessibilityHidden(true)
+
+            // Data rows
+            ForEach(rows) { row in
+                HStack {
+                    Text(row.region).frame(maxWidth: .infinity, alignment: .leading)
+                    Text(row.units).frame(maxWidth: .infinity, alignment: .trailing)
+                    Text(row.revenue).frame(maxWidth: .infinity, alignment: .trailing)
+                }
+                .padding(.vertical, 8)
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("\(row.region), \(row.units) units, \(row.revenue) revenue")
+
+                Divider().accessibilityHidden(true)
+            }
+        }
+        .padding()
+        .accessibilityLabel("Q4 sales by region")
+    }
+}</code></pre>
+            </div>
+          </section>
+          <section aria-labelledby="dev-android-heading">
+            <h2 id="dev-android-heading">Dev guidelines for Android</h2>
+            <ul>
+              <li>Use <code>Modifier.semantics { contentDescription = "..." }</code> on each row composable to give TalkBack a combined announcement — for example, "Americas, 12,400 units, $2.1M revenue" — rather than having users swipe through each cell individually.</li>
+              <li>Apply <code>mergeDescendants = true</code> inside a row's <code>semantics</code> block when the row acts as a single focusable unit; omit it when cells contain independent interactive elements (e.g. links or buttons) that need separate focus.</li>
+              <li>Mark column header composables with <code>Modifier.semantics { heading() }</code> so TalkBack announces them as headings and users can navigate between them using the heading shortcut.</li>
+              <li>For sortable columns, expose sort state using <code>stateDescription = "sorted ascending"</code> or <code>stateDescription = "sorted descending"</code> inside the header's <code>semantics</code> block so TalkBack announces the current sort direction alongside the column name.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import androidx.compose.foundation.layout.*
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.*
+import androidx.compose.ui.unit.dp
+
+data class SalesRow(val region: String, val units: String, val revenue: String)
+
+@Composable
+fun SalesTable(rows: List&lt;SalesRow&gt;) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .semantics { contentDescription = "Q4 sales by region" }
+    ) {
+        // Column headers
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics(mergeDescendants = false) { heading() }
+                .padding(vertical = 8.dp)
+        ) {
+            Text("Region", modifier = Modifier.weight(1f))
+            Text("Units sold", modifier = Modifier.weight(1f))
+            Text("Revenue", modifier = Modifier.weight(1f))
+        }
+
+        HorizontalDivider()
+
+        // Data rows
+        rows.forEach { row -&gt;
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+                    .semantics(mergeDescendants = true) {
+                        contentDescription =
+                            "${row.region}, ${row.units} units, ${row.revenue} revenue"
+                    }
+            ) {
+                Text(row.region, modifier = Modifier.weight(1f))
+                Text(row.units, modifier = Modifier.weight(1f))
+                Text(row.revenue, modifier = Modifier.weight(1f))
+            }
+
+            HorizontalDivider()
+        }
+    }
+}</code></pre>
+            </div>
+          </section>
           <section aria-labelledby="further-reading-heading">
             <h2 id="further-reading-heading">Further reading</h2>
             <ul>

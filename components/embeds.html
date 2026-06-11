@@ -229,6 +229,124 @@
             </div>
 </section>
 
+          <section aria-labelledby="dev-ios-heading">
+            <h2 id="dev-ios-heading">Dev guidelines for iOS</h2>
+            <ul>
+              <li><strong>Give every WKWebView an accessible label.</strong> Apply <code>.accessibilityLabel("...")</code> to the WKWebView container so VoiceOver announces a meaningful description — for example, "Google Map showing our London office" — rather than reading out a raw URL or staying silent.</li>
+              <li><strong>Provide a native fallback button adjacent to any embedded map.</strong> Place a clearly labelled <code>Button</code> immediately after the map view that opens the location in Maps.app via a deep link. Users who cannot interact with a map embed must still be able to get directions.</li>
+              <li><strong>Mark decorative or purely visual embed containers as hidden from assistive technology.</strong> Use <code>.accessibilityHidden(true)</code> on any wrapper view that contains no interactive or informational content — for example, a loading placeholder — so VoiceOver skips it entirely.</li>
+              <li><strong>Apply <code>.accessibilityIgnoresInvertColors()</code> to map and media embeds.</strong> Map tiles and video frames are meaningful visual content; inverting their colours makes them unusable. This modifier preserves their appearance when Smart Invert is active.</li>
+              <li><strong>Post a VoiceOver announcement when the embed finishes loading.</strong> Use <code>UIAccessibility.post(notification: .announcement, argument: "Map loaded")</code> so users who cannot see the screen know when the content is ready to interact with.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import SwiftUI
+import WebKit
+import MapKit
+
+struct LocationEmbedView: View {
+    let coordinate = CLLocationCoordinate2D(latitude: 51.5074, longitude: -0.1278)
+    let address = "123 Example Street, London, EC1A 1BB"
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Map(coordinateRegion: .constant(
+                MKCoordinateRegion(
+                    center: coordinate,
+                    span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
+                )
+            ))
+            .frame(height: 240)
+            .accessibilityLabel("Map showing our London office at \(address)")
+            .accessibilityIgnoresInvertColors()
+
+            Text(address)
+                .font(.subheadline)
+
+            Button("Open in Maps") {
+                openInMaps()
+            }
+            .accessibilityHint("Opens the location in the Maps app")
+        }
+        .padding()
+        .onAppear {
+            UIAccessibility.post(
+                notification: .announcement,
+                argument: "Map loaded. Office location is displayed."
+            )
+        }
+    }
+
+    func openInMaps() {
+        let url = URL(string: "maps://?q=\(address.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? "")")!
+        UIApplication.shared.open(url)
+    }
+}</code></pre>
+            </div>
+          </section>
+          <section aria-labelledby="dev-android-heading">
+            <h2 id="dev-android-heading">Dev guidelines for Android</h2>
+            <ul>
+              <li><strong>Set a <code>contentDescription</code> on every WebView or map container.</strong> Use <code>Modifier.semantics { contentDescription = "..." }</code> so TalkBack announces a meaningful description rather than a raw URL or nothing at all.</li>
+              <li><strong>Provide a native fallback button adjacent to any embedded map.</strong> Place a clearly labelled <code>Button</code> immediately after the map composable that opens the location in a maps app via an intent. Do not rely on users being able to interact with the WebView map.</li>
+              <li><strong>Use <code>Modifier.clearAndSetSemantics { }</code> on loading placeholders.</strong> Placeholder composables shown while the embed loads carry no useful information; clearing their semantics prevents TalkBack from announcing them.</li>
+              <li><strong>Announce when the embed finishes loading using <code>LiveRegionMode.Polite</code>.</strong> Set <code>liveRegion = LiveRegionMode.Polite</code> on a status text composable and update its value to "Map loaded" when the WebView finishes loading, so users relying on TalkBack know the content is ready.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import androidx.compose.foundation.layout.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.*
+import androidx.compose.ui.unit.dp
+import com.google.maps.android.compose.*
+
+@Composable
+fun LocationEmbedView(
+    address: String = "123 Example Street, London, EC1A 1BB",
+    onOpenInMaps: () -&gt; Unit
+) {
+    var loadStatus by remember { mutableStateOf("") }
+
+    Column(
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = Modifier.padding(16.dp)
+    ) {
+        GoogleMap(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(240.dp)
+                .semantics {
+                    contentDescription = "Map showing our London office at $address"
+                },
+            onMapLoaded = {
+                loadStatus = "Map loaded. Office location is displayed."
+            }
+        )
+
+        Text(
+            text = loadStatus,
+            modifier = Modifier.semantics {
+                liveRegion = LiveRegionMode.Polite
+            }
+        )
+
+        Text(text = address)
+
+        Button(
+            onClick = onOpenInMaps,
+            modifier = Modifier.semantics {
+                contentDescription = "Open office location in Maps app"
+            }
+        ) {
+            Text("Open in Maps")
+        }
+    }
+}</code></pre>
+            </div>
+          </section>
           <section aria-labelledby="further-reading-heading">
             <h2 id="further-reading-heading">Further reading</h2>
             <ul>

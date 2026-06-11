@@ -228,6 +228,137 @@
               </div>
             </div>
 </section>
+          <section aria-labelledby="dev-ios-heading">
+            <h2 id="dev-ios-heading">Dev guidelines for iOS</h2>
+            <ul>
+              <li>Wrap the entire pagination component in a container using <code>.accessibilityElement(children: .contain)</code> so VoiceOver can navigate each page item individually — do not use <code>.combine</code>, which would collapse all page numbers into a single focus target.</li>
+              <li>Set <code>.accessibilityLabel("Page 3")</code> on each numbered button so VoiceOver announces a meaningful name rather than just the numeral glyph; use <code>.accessibilityLabel("Previous page")</code> and <code>.accessibilityLabel("Next page")</code> on the chevron controls.</li>
+              <li>Add <code>.accessibilityAddTraits(.isSelected)</code> to the current page button and <code>.accessibilityRemoveTraits(.isButton)</code> if it is rendered as a non-interactive indicator, so VoiceOver communicates the selected state correctly.</li>
+              <li>Disable Previous and Next buttons using <code>.disabled(true)</code> at the first and last pages respectively — SwiftUI automatically adds the <code>.isNotEnabled</code> trait, which VoiceOver announces as "dimmed".</li>
+              <li>After a page change, post <code>UIAccessibility.post(notification: .announcement, argument: "Page 3 of 10")</code> so VoiceOver users hear confirmation of the navigation without needing to re-read the whole control.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>struct PaginationView: View {
+    let totalPages: Int
+    @Binding var currentPage: Int
+
+    var body: some View {
+        HStack(spacing: 4) {
+            Button {
+                currentPage -= 1
+                announcePageChange()
+            } label: {
+                Image(systemName: "chevron.left")
+            }
+            .accessibilityLabel("Previous page")
+            .disabled(currentPage == 1)
+
+            ForEach(1...totalPages, id: \.self) { page in
+                Button("\(page)") {
+                    currentPage = page
+                    announcePageChange()
+                }
+                .accessibilityLabel("Page \(page)")
+                .accessibilityAddTraits(page == currentPage ? .isSelected : [])
+            }
+
+            Button {
+                currentPage += 1
+                announcePageChange()
+            } label: {
+                Image(systemName: "chevron.right")
+            }
+            .accessibilityLabel("Next page")
+            .disabled(currentPage == totalPages)
+        }
+        .accessibilityElement(children: .contain)
+    }
+
+    private func announcePageChange() {
+        UIAccessibility.post(
+            notification: .announcement,
+            argument: "Page \(currentPage) of \(totalPages)"
+        )
+    }
+}</code></pre>
+            </div>
+          </section>
+          <section aria-labelledby="dev-android-heading">
+            <h2 id="dev-android-heading">Dev guidelines for Android</h2>
+            <ul>
+              <li>Apply <code>Modifier.semantics { role = Role.Button }</code> to each page number item and to the Previous and Next controls so TalkBack identifies them correctly as interactive buttons.</li>
+              <li>Use <code>Modifier.semantics { contentDescription = "Page 3" }</code> on numbered items and <code>"Previous page"</code> / <code>"Next page"</code> on chevron controls to replace the default visual text or icon description with a meaningful announcement.</li>
+              <li>Mark the current page with <code>Modifier.semantics { selected = true }</code> so TalkBack announces "selected" alongside the page number, communicating position within the set.</li>
+              <li>Disable Previous on the first page and Next on the last page using <code>Modifier.semantics { disabled() }</code> together with <code>enabled = false</code> on the <code>IconButton</code> or <code>TextButton</code> so TalkBack announces the control as "unavailable".</li>
+              <li>After a successful page change, trigger a live region announcement by updating a state variable tied to a <code>Modifier.semantics { liveRegion = LiveRegionMode.Polite }</code> node so TalkBack reads the new page context without interrupting ongoing speech.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>@Composable
+fun PaginationRow(
+    totalPages: Int,
+    currentPage: Int,
+    onPageChange: (Int) -&gt; Unit
+) {
+    var announcement by remember { mutableStateOf("") }
+
+    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        IconButton(
+            onClick = {
+                onPageChange(currentPage - 1)
+                announcement = "Page ${currentPage - 1} of $totalPages"
+            },
+            enabled = currentPage &gt; 1,
+            modifier = Modifier.semantics {
+                contentDescription = "Previous page"
+                role = Role.Button
+            }
+        ) {
+            Icon(Icons.Default.ChevronLeft, contentDescription = null)
+        }
+
+        for (page in 1..totalPages) {
+            TextButton(
+                onClick = {
+                    onPageChange(page)
+                    announcement = "Page $page of $totalPages"
+                },
+                modifier = Modifier.semantics {
+                    contentDescription = "Page $page"
+                    role = Role.Button
+                    selected = (page == currentPage)
+                }
+            ) {
+                Text("$page")
+            }
+        }
+
+        IconButton(
+            onClick = {
+                onPageChange(currentPage + 1)
+                announcement = "Page ${currentPage + 1} of $totalPages"
+            },
+            enabled = currentPage &lt; totalPages,
+            modifier = Modifier.semantics {
+                contentDescription = "Next page"
+                role = Role.Button
+            }
+        ) {
+            Icon(Icons.Default.ChevronRight, contentDescription = null)
+        }
+    }
+
+    Box(
+        modifier = Modifier.semantics {
+            liveRegion = LiveRegionMode.Polite
+            contentDescription = announcement
+        }
+    )
+}
+</code></pre>
+            </div>
+          </section>
           <section aria-labelledby="further-reading-heading">
             <h2 id="further-reading-heading">Further reading</h2>
             <ul>

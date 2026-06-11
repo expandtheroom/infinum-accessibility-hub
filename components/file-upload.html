@@ -226,6 +226,147 @@
             </div>
 </section>
 
+          <section aria-labelledby="dev-ios-heading">
+            <h2 id="dev-ios-heading">Dev guidelines for iOS</h2>
+            <ul>
+              <li><strong>Use <code>.accessibilityLabel("...")</code> on the upload button</strong> — the native <code>PhotosPicker</code> or custom "Choose file" button should carry a clear VoiceOver label such as "Upload resume, button". Without an explicit label, VoiceOver may announce the button's SF Symbol name or nothing at all.</li>
+              <li><strong>Use <code>.accessibilityHint("...")</code> to describe the outcome</strong> — for example, "Opens file browser to select a PDF or DOCX up to 5 MB." Hints provide the context users need before activating the control, helping them avoid unexpected system dialogs.</li>
+              <li><strong>Announce upload progress and completion with <code>UIAccessibility.post(notification: .announcement, argument: "...")</code></strong> — post an announcement when the upload finishes or fails, e.g. "resume.pdf uploaded successfully" or "Upload failed: file exceeds 5 MB." This is the VoiceOver equivalent of an <code>aria-live</code> region.</li>
+              <li><strong>Use <code>.accessibilityValue("...")</code> to convey dynamic upload progress</strong> — if you display a progress bar or percentage, set its accessibility value to the current percentage string, e.g. "60 percent", so VoiceOver users hear progress without needing to navigate to a visual indicator.</li>
+              <li><strong>Use <code>.accessibilityElement(children: .combine)</code> on the upload result row</strong> — when the uploaded file is shown as a row containing a filename, file-type icon, and a remove button, combine the filename and icon into one focusable unit so VoiceOver announces them together. Keep the remove button as a separate focusable element or use <code>accessibilityCustomActions</code> to attach it.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import SwiftUI
+import PhotosUI
+
+struct FileUploadField: View {
+    @State private var selectedItem: PhotosPickerItem? = nil
+    @State private var uploadedFileName: String? = nil
+    @State private var statusMessage: String = ""
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Upload your resume")
+                .font(.headline)
+
+            PhotosPicker(
+                selection: $selectedItem,
+                matching: .any(of: [.images])
+            ) {
+                Label("Choose file", systemImage: "paperclip")
+            }
+            .accessibilityLabel("Choose file")
+            .accessibilityHint("Opens file browser to select a PDF or DOCX up to 5 MB")
+            .onChange(of: selectedItem) { newItem in
+                if newItem != nil {
+                    uploadedFileName = "resume.pdf"
+                    statusMessage = "resume.pdf uploaded successfully"
+                    UIAccessibility.post(
+                        notification: .announcement,
+                        argument: statusMessage
+                    )
+                }
+            }
+
+            if let fileName = uploadedFileName {
+                HStack {
+                    Image(systemName: "doc.fill")
+                        .accessibilityHidden(true)
+                    Text(fileName)
+                }
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel(fileName)
+            }
+
+            Text("Accepted: PDF, DOCX. Maximum: 5 MB.")
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
+        .padding()
+    }
+}</code></pre>
+            </div>
+          </section>
+          <section aria-labelledby="dev-android-heading">
+            <h2 id="dev-android-heading">Dev guidelines for Android</h2>
+            <ul>
+              <li><strong>Set <code>contentDescription</code> on the upload button</strong> — use <code>Modifier.semantics { contentDescription = "Choose file, opens file browser" }</code> so TalkBack announces a meaningful label. Without this, TalkBack may read the button text alone, which may lack enough context about the expected file types or size limit.</li>
+              <li><strong>Set <code>role = Role.Button</code> on any custom upload trigger</strong> — if you build a custom composable to replace the system file picker button, declare its role explicitly so TalkBack appends "button" to the announcement and users know it is interactive.</li>
+              <li><strong>Use <code>stateDescription</code> to convey upload progress</strong> — set <code>Modifier.semantics { stateDescription = "Uploading, 60 percent" }</code> on the progress indicator so TalkBack can read the current state when the user navigates to it, rather than relying on a visual-only bar.</li>
+              <li><strong>Use <code>LiveRegionMode.Polite</code> to announce upload completion or failure</strong> — wrap your status text composable in <code>Modifier.semantics { liveRegion = LiveRegionMode.Polite }</code>. When the text changes to "resume.pdf uploaded successfully" or an error message, TalkBack announces the update automatically without requiring the user to navigate there.</li>
+              <li><strong>Use <code>mergeDescendants = true</code> on the uploaded file row</strong> — when the uploaded file is displayed as a row with a filename, icon, and remove button, merge the filename and icon into one focusable unit. Keep the remove action as a <code>customActions</code> entry so TalkBack users can trigger it via the local actions menu without cluttering the focus order.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.*
+import androidx.compose.ui.unit.dp
+
+@Composable
+fun FileUploadField() {
+    var uploadedFileName by remember { mutableStateOf&lt;String?&gt;(null) }
+    var statusMessage by remember { mutableStateOf("") }
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri -&gt;
+        if (uri != null) {
+            uploadedFileName = "resume.pdf"
+            statusMessage = "resume.pdf uploaded successfully"
+        }
+    }
+
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text("Upload your resume", style = MaterialTheme.typography.titleMedium)
+
+        Button(
+            onClick = { launcher.launch("application/pdf") },
+            modifier = Modifier.semantics {
+                contentDescription = "Choose file, opens file browser"
+                role = Role.Button
+            }
+        ) {
+            Text("Choose file")
+        }
+
+        Text(
+            text = statusMessage,
+            modifier = Modifier.semantics {
+                liveRegion = LiveRegionMode.Polite
+            }
+        )
+
+        uploadedFileName?.let { fileName -&gt;
+            Row(
+                modifier = Modifier.semantics(mergeDescendants = true) {
+                    contentDescription = fileName
+                    customActions = listOf(
+                        CustomAccessibilityAction("Remove file") {
+                            uploadedFileName = null
+                            true
+                        }
+                    )
+                }
+            ) {
+                Icon(imageVector = Icons.Default.AttachFile, contentDescription = null)
+                Text(fileName)
+            }
+        }
+
+        Text(
+            text = "Accepted: PDF, DOCX. Maximum: 5 MB.",
+            style = MaterialTheme.typography.bodySmall
+        )
+    }
+}</code></pre>
+            </div>
+          </section>
           <section aria-labelledby="further-reading-heading">
             <h2 id="further-reading-heading">Further reading</h2>
             <ul>

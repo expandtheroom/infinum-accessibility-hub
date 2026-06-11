@@ -221,6 +221,97 @@
               </div>
             </div>
 </section>
+          <section aria-labelledby="dev-ios-heading">
+            <h2 id="dev-ios-heading">Dev guidelines for iOS</h2>
+            <ul>
+              <li>Combine each breadcrumb item (label and separator) into a single focusable unit using <code>.accessibilityElement(children: .combine)</code> so VoiceOver does not announce the separator character separately.</li>
+              <li>Hide decorative separator characters from VoiceOver by marking the separator view with <code>.accessibilityHidden(true)</code> — this mirrors the CSS <code>aria-hidden</code> pattern used on web.</li>
+              <li>Apply <code>.accessibilityAddTraits(.isLink)</code> to each tappable ancestor item so VoiceOver announces it as a link, and omit the trait (or use no interactive trait) on the current page item which is non-navigable.</li>
+              <li>Apply <code>.accessibilityLabel("Current page")</code> or append ", current page" to the label of the last breadcrumb item to communicate the equivalent of <code>aria-current="page"</code> to VoiceOver users.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>struct BreadcrumbView: View {
+    let items: [(label: String, destination: String?)]
+
+    var body: some View {
+        HStack(spacing: 4) {
+            ForEach(Array(items.enumerated()), id: \.offset) { index, item in
+                if index &gt; 0 {
+                    Text("/")
+                        .accessibilityHidden(true)
+                        .foregroundColor(.secondary)
+                }
+
+                let isCurrent = item.destination == nil
+
+                if isCurrent {
+                    Text(item.label)
+                        .foregroundColor(.primary)
+                        .accessibilityElement(children: .combine)
+                        .accessibilityLabel("\(item.label), current page")
+                } else {
+                    Button(item.label) {
+                        // navigate to item.destination
+                    }
+                    .accessibilityAddTraits(.isLink)
+                    .accessibilityRemoveTraits(.isButton)
+                }
+            }
+        }
+    }
+}</code></pre>
+            </div>
+          </section>
+          <section aria-labelledby="dev-android-heading">
+            <h2 id="dev-android-heading">Dev guidelines for Android</h2>
+            <ul>
+              <li>Use <code>Modifier.semantics { contentDescription = "..." }</code> on the current page item to append ", current page" to its announced label, replicating the <code>aria-current="page"</code> pattern from web.</li>
+              <li>Set <code>Role.Button</code> (or <code>Role.Image</code> if icon-only) on each tappable ancestor breadcrumb item so TalkBack announces the correct interaction type.</li>
+              <li>Hide decorative separator composables from TalkBack using <code>Modifier.semantics { contentDescription = "" }</code> combined with <code>clearAndSetSemantics { }</code>, or by wrapping separators in a <code>Box</code> with <code>Modifier.clearAndSetSemantics { }</code>.</li>
+              <li>If the full trail needs to read as a single unit, use <code>mergeDescendants = true</code> on a wrapping <code>Row</code> — but only when all items fit on one line; on long trails, keep items separately focusable so users can navigate item by item.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>@Composable
+fun BreadcrumbRow(items: List&lt;BreadcrumbItem&gt;) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        items.forEachIndexed { index, item -&gt;
+            if (index &gt; 0) {
+                Text(
+                    text = "/",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.clearAndSetSemantics { }
+                )
+            }
+
+            val isCurrent = item.destination == null
+
+            if (isCurrent) {
+                Text(
+                    text = item.label,
+                    modifier = Modifier.semantics {
+                        contentDescription = "${item.label}, current page"
+                    }
+                )
+            } else {
+                TextButton(
+                    onClick = { /* navigate to item.destination */ },
+                    modifier = Modifier.semantics { role = Role.Button }
+                ) {
+                    Text(text = item.label)
+                }
+            }
+        }
+    }
+}
+
+data class BreadcrumbItem(val label: String, val destination: String?)</code></pre>
+            </div>
+          </section>
           <section aria-labelledby="further-reading-heading">
             <h2 id="further-reading-heading">Further reading</h2>
             <ul>

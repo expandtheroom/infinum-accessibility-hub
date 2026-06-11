@@ -235,6 +235,105 @@
               </div>
             </div>
 </section>
+          <section aria-labelledby="dev-ios-heading">
+            <h2 id="dev-ios-heading">Dev guidelines for iOS</h2>
+            <ul>
+              <li>Use <code>.accessibilityElement(children: .combine)</code> on each timeline event container to merge the date, title, and description into a single VoiceOver focus target — this prevents users from having to navigate through every sub-element of every event individually.</li>
+              <li>Provide a descriptive <code>.accessibilityLabel("...")</code> that includes both the date and the event description (e.g. <code>"March 2024 — Project kickoff and requirements gathering"</code>) — do not rely on VoiceOver's automatic label concatenation, which may read sub-elements in an unhelpful order.</li>
+              <li>Decorative connector lines and dot nodes rendered as SwiftUI views or shapes must have <code>.accessibilityHidden(true)</code> applied — they carry no information beyond what the event text already communicates.</li>
+              <li>If an event item can be expanded to reveal more detail, use <code>.accessibilityAddTraits(.isButton)</code> on the tappable element and provide an <code>.accessibilityHint("Double-tap to expand")</code>; update the <code>.accessibilityValue("Expanded")</code> or <code>.accessibilityValue("Collapsed")</code> to reflect current state dynamically.</li>
+              <li>After navigating to a new screen triggered by a timeline event (e.g. tapping "View details"), post a <code>UIAccessibility.post(notification: .screenChanged, argument: nil)</code> notification so VoiceOver moves focus to the top of the new view rather than leaving the user stranded.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>struct TimelineEventRow: View {
+    let date: String
+    let description: String
+    let isDecorative: Bool = true
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            VStack {
+                Circle()
+                    .fill(Color.blue)
+                    .frame(width: 12, height: 12)
+                    .accessibilityHidden(true)
+                Rectangle()
+                    .fill(Color.gray.opacity(0.4))
+                    .frame(width: 2)
+                    .accessibilityHidden(true)
+            }
+            VStack(alignment: .leading, spacing: 4) {
+                Text(date)
+                    .font(.caption.weight(.bold))
+                    .foregroundColor(.secondary)
+                Text(description)
+                    .font(.body)
+            }
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(date) — \(description)")
+    }
+}</code></pre>
+            </div>
+          </section>
+          <section aria-labelledby="dev-android-heading">
+            <h2 id="dev-android-heading">Dev guidelines for Android</h2>
+            <ul>
+              <li>Apply <code>Modifier.semantics(mergeDescendants = true) {}</code> to each timeline event container so TalkBack treats the date, title, and description as a single focusable unit — this mirrors the intended reading experience and avoids unnecessary swipe stops.</li>
+              <li>Set a <code>contentDescription</code> inside the semantics block that combines the date and event text (e.g. <code>"March 2024, Project kickoff and requirements gathering"</code>) — this ensures TalkBack reads a coherent, complete sentence rather than fragmented sub-strings.</li>
+              <li>Connector lines and decorative dot nodes rendered as composables must use <code>Modifier.semantics { invisibleToUser() }</code> or be drawn via <code>Canvas</code> without semantics — they must not receive TalkBack focus.</li>
+              <li>If timeline events are expandable, set <code>stateDescription = if (expanded) "Expanded" else "Collapsed"</code> inside the semantics block and use a <code>Role.Button</code> on the tappable container so TalkBack announces both the action role and the current state on focus.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>@Composable
+fun TimelineEventRow(
+    date: String,
+    description: String
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .semantics(mergeDescendants = true) {
+                contentDescription = "$date, $description"
+            }
+            .padding(vertical = 8.dp),
+        horizontalArrangement = Arrangement.Start
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.width(24.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(12.dp)
+                    .background(Color.Blue, shape = CircleShape)
+                    .semantics { invisibleToUser() }
+            )
+            Spacer(
+                modifier = Modifier
+                    .width(2.dp)
+                    .weight(1f)
+                    .background(Color.Gray.copy(alpha = 0.4f))
+                    .semantics { invisibleToUser() }
+            )
+        }
+        Column(modifier = Modifier.padding(start = 12.dp)) {
+            Text(
+                text = date,
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
+    }
+}</code></pre>
+            </div>
+          </section>
           <section aria-labelledby="further-reading-heading">
             <h2 id="further-reading-heading">Further reading</h2>
             <ul>

@@ -227,6 +227,103 @@
             </div>
 </section>
 
+          <section aria-labelledby="dev-ios-heading">
+            <h2 id="dev-ios-heading">Dev guidelines for iOS</h2>
+            <ul>
+              <li><strong>Prefer <code>DatePicker</code> with a descriptive label</strong> — SwiftUI's native <code>DatePicker</code> is fully VoiceOver accessible. Pass a visible label string as the first argument; it becomes the accessibility label for the control. Use <code>.labelsHidden()</code> only when a separate visible label is already present, and in that case set <code>.accessibilityLabel("...")</code> explicitly on the picker.</li>
+              <li><strong>Announce the selected value with <code>.accessibilityValue("...")</code></strong> — when using a custom date wheel or a read-only display that reflects the picker's value, set <code>.accessibilityValue</code> to a human-readable string (e.g. "15 March 2026") so VoiceOver reads the current selection without requiring the user to navigate into the picker.</li>
+              <li><strong>Use <code>.accessibilityHint("...")</code> to explain the picker's purpose</strong> — for pickers with date range constraints (e.g. future dates only), add a hint such as "Double-tap to open. Only future dates are available." This is distinct from the label and helps users understand constraints before interacting.</li>
+              <li><strong>Set <code>.accessibilityElement(children: .combine)</code> on grouped date + time fields</strong> — if a date and a time picker are visually grouped under a single label, wrap them in a container view and apply <code>.accessibilityElement(children: .combine)</code> so VoiceOver treats the group as a single focusable unit with a combined accessible name and value.</li>
+              <li><strong>Use <code>UIAccessibility.post(notification: .announcement, argument: "...")</code> after programmatic date changes</strong> — if the app pre-fills or auto-advances the date (e.g. skipping unavailable dates), post an announcement so VoiceOver users are informed of the new value without having to re-focus the picker.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import SwiftUI
+
+struct AppointmentDatePicker: View {
+    @State private var selectedDate = Date()
+
+    private var dateRange: ClosedRange&lt;Date&gt; {
+        let start = Date()
+        let end = Calendar.current.date(byAdding: .year, value: 1, to: start)!
+        return start...end
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Appointment date")
+                .font(.headline)
+
+            DatePicker(
+                "Appointment date",
+                selection: $selectedDate,
+                in: dateRange,
+                displayedComponents: .date
+            )
+            .labelsHidden()
+            .accessibilityLabel("Appointment date")
+            .accessibilityValue(
+                selectedDate.formatted(date: .long, time: .omitted)
+            )
+            .accessibilityHint("Double-tap to open. Only dates within the next year are available.")
+        }
+        .padding()
+    }
+}</code></pre>
+            </div>
+          </section>
+          <section aria-labelledby="dev-android-heading">
+            <h2 id="dev-android-heading">Dev guidelines for Android</h2>
+            <ul>
+              <li><strong>Use Material3 <code>DatePicker</code> or <code>DatePickerDialog</code></strong> — these components include built-in TalkBack support. Avoid fully custom calendar grids unless the native component cannot meet the requirement; custom implementations require careful manual semantics work.</li>
+              <li><strong>Set <code>contentDescription</code> on the trigger button</strong> — if you use an icon button to open the date picker dialog, apply <code>Modifier.semantics { contentDescription = "Choose appointment date" }</code> so TalkBack announces a meaningful label rather than the icon's default or nothing.</li>
+              <li><strong>Apply <code>stateDescription</code> to reflect the current selection</strong> — on a read-only text field or surface that displays the chosen date, add <code>Modifier.semantics { stateDescription = formattedDate }</code> so TalkBack announces the selected value as part of the element's state, not just its label.</li>
+              <li><strong>Use <code>mergeDescendants = true</code> for label + field groupings</strong> — if a date label and its associated picker trigger or text display are separate composables, wrap them in a <code>Box</code> or <code>Column</code> with <code>Modifier.semantics(mergeDescendants = true) {}</code> so TalkBack focuses the group as a single item with a combined announcement.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.*
+
+@Composable
+fun AppointmentDateField(
+    selectedDateMillis: Long?,
+    onPickerOpen: () -&gt; Unit
+) {
+    val formattedDate = selectedDateMillis
+        ?.let { millis -&gt; formatDate(millis) }
+        ?: "No date selected"
+
+    Column(
+        modifier = Modifier.semantics(mergeDescendants = true) {}
+    ) {
+        Text(text = "Appointment date", style = MaterialTheme.typography.labelLarge)
+
+        OutlinedTextField(
+            value = formattedDate,
+            onValueChange = {},
+            readOnly = true,
+            modifier = Modifier.semantics {
+                stateDescription = formattedDate
+                contentDescription = "Appointment date, $formattedDate"
+            },
+            trailingIcon = {
+                IconButton(
+                    onClick = onPickerOpen,
+                    modifier = Modifier.semantics {
+                        contentDescription = "Choose appointment date"
+                    }
+                ) {
+                    Icon(Icons.Default.DateRange, contentDescription = null)
+                }
+            }
+        )
+    }
+}</code></pre>
+            </div>
+          </section>
           <section aria-labelledby="further-reading-heading">
             <h2 id="further-reading-heading">Further reading</h2>
             <ul>

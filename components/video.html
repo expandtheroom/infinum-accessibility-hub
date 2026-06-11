@@ -252,6 +252,112 @@ btn.addEventListener('click', () => {
             </div>
 </section>
 
+          <section aria-labelledby="dev-ios-heading">
+            <h2 id="dev-ios-heading">Dev guidelines for iOS</h2>
+            <ul>
+              <li><strong>Apply <code>.accessibilityIgnoresInvertColors()</code> to the video view.</strong> Smart Invert colours can invert video frames, making them visually distorted for users who rely on colour inversion. This modifier prevents the inversion from affecting the video content while still allowing UI controls to be inverted.</li>
+              <li><strong>Use <code>.accessibilityLabel("...")</code> on the player container to describe the video.</strong> Provide a meaningful label such as the video title and duration so VoiceOver announces what the content is when focus lands on the player — for example, <code>.accessibilityLabel("Tutorial: Getting started with keyboard testing, 5 minutes")</code>.</li>
+              <li><strong>Add <code>.accessibilityAddTraits(.startsMediaSession)</code> to the play button.</strong> This trait signals to VoiceOver that activating the control starts a media session, prompting VoiceOver to reduce its own speech so the video audio is audible without interference.</li>
+              <li><strong>Use <code>accessibilityCustomActions</code> to expose caption and audio description toggles on the combined player element.</strong> When player controls are combined into a single focusable unit, secondary actions like enabling captions or switching to an audio-described version should be registered as custom actions so they are reachable without navigating through every individual control.</li>
+              <li><strong>Post a VoiceOver announcement when playback state changes programmatically.</strong> If the app pauses or stops playback due to an error or completion, use <code>UIAccessibility.post(notification: .announcement, argument: "Video ended")</code> so users who cannot see the screen are informed of the state change.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import SwiftUI
+import AVKit
+
+struct AccessibleVideoPlayer: View {
+    let player: AVPlayer
+    let videoTitle: String
+    let duration: String
+
+    @State private var captionsEnabled = false
+    @State private var isPlaying = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            VideoPlayer(player: player)
+                .frame(maxWidth: .infinity)
+                .aspectRatio(16 / 9, contentMode: .fit)
+                .accessibilityIgnoresInvertColors()
+                .accessibilityLabel("\(videoTitle), \(duration)")
+                .accessibilityAddTraits(.startsMediaSession)
+                .accessibilityCustomActions([
+                    AccessibilityCustomAction(
+                        name: captionsEnabled ? "Turn captions off" : "Turn captions on"
+                    ) { _ in
+                        captionsEnabled.toggle()
+                        return true
+                    }
+                ])
+
+            Text(videoTitle)
+                .font(.headline)
+                .accessibilityHidden(true)
+        }
+        .padding()
+    }
+}</code></pre>
+            </div>
+          </section>
+          <section aria-labelledby="dev-android-heading">
+            <h2 id="dev-android-heading">Dev guidelines for Android</h2>
+            <ul>
+              <li><strong>Use <code>Modifier.semantics { contentDescription = "..." }</code> on the video player container to describe the video.</strong> Provide the video title and duration as the content description so TalkBack announces what the content is when focus reaches the player — for example, <code>contentDescription = "Tutorial: Getting started with keyboard testing, 5 minutes"</code>.</li>
+              <li><strong>Apply <code>Modifier.semantics { role = Role.Button }</code> to the play/pause control.</strong> Custom composable play/pause buttons do not automatically carry button semantics. Assigning the role ensures TalkBack announces the control as a button and includes it in the expected interaction model.</li>
+              <li><strong>Use <code>stateDescription = "..."</code> to reflect current playback state.</strong> Set the state description to <code>"Playing"</code> or <code>"Paused"</code> so TalkBack reads the current state alongside the control label when focus lands on the play/pause button, without needing to change the content description itself.</li>
+              <li><strong>Register caption and audio description toggles as <code>customActions</code>.</strong> When the player controls are merged using <code>mergeDescendants = true</code>, expose caption and audio description toggles via <code>customActions = listOf(CustomAccessibilityAction("Enable captions") { ... })</code> so they remain reachable without navigating each individual control.</li>
+              <li><strong>Announce playback events using <code>LiveRegionMode.Polite</code> on a status composable.</strong> When playback ends, an error occurs, or captions are toggled, update a composable whose semantics include <code>liveRegion = LiveRegionMode.Polite</code> so TalkBack announces the change without interrupting ongoing speech.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.*
+import androidx.compose.ui.unit.dp
+import androidx.media3.ui.PlayerView
+
+@Composable
+fun AccessibleVideoPlayer(
+    videoTitle: String,
+    duration: String,
+    isPlaying: Boolean,
+    onPlayPauseToggle: () -&gt; Unit,
+    onCaptionsToggle: () -&gt; Unit,
+    captionsEnabled: Boolean
+) {
+    Column(modifier = Modifier.fillMaxWidth()) {
+        AndroidView(
+            factory = { context -&gt; PlayerView(context) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(16f / 9f)
+                .semantics {
+                    contentDescription = "$videoTitle, $duration"
+                }
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Button(
+            onClick = onPlayPauseToggle,
+            modifier = Modifier.semantics {
+                role = Role.Button
+                stateDescription = if (isPlaying) "Playing" else "Paused"
+                customActions = listOf(
+                    CustomAccessibilityAction(
+                        label = if (captionsEnabled) "Disable captions" else "Enable captions",
+                        action = { onCaptionsToggle(); true }
+                    )
+                )
+            }
+        ) {
+            Text(if (isPlaying) "Pause" else "Play")
+        }
+    }
+}</code></pre>
+            </div>
+          </section>
           <section aria-labelledby="further-reading-heading">
             <h2 id="further-reading-heading">Further reading</h2>
             <ul>

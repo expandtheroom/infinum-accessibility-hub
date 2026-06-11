@@ -224,6 +224,119 @@
               </div>
             </div>
 </section>
+          <section aria-labelledby="dev-ios-heading">
+            <h2 id="dev-ios-heading">Dev guidelines for iOS</h2>
+            <ul>
+              <li>Footer navigation on iOS is typically rendered as a scrollable list or a series of grouped links. Use <code>.accessibilityElement(children: .contain)</code> on each column group so VoiceOver keeps individual links focusable rather than merging the whole column into one element.</li>
+              <li>Apply <code>.accessibilityLabel("…")</code> on social media icon buttons to describe the destination — e.g. <code>.accessibilityLabel("Follow us on Instagram")</code> — since icon-only buttons have no inherent text for VoiceOver to read.</li>
+              <li>Mark column headings with <code>.accessibilityAddTraits(.isHeader)</code> so VoiceOver users can navigate by heading and understand the grouping structure of the footer.</li>
+              <li>Use <code>.accessibilityHidden(true)</code> on purely decorative dividers or background shapes within the footer so they are skipped by VoiceOver and do not clutter the focus order.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import SwiftUI
+
+struct FooterNavigationView: View {
+    let companyLinks = ["About", "Careers", "Blog"]
+    let supportLinks = ["Contact", "Help centre", "Accessibility"]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 24) {
+            footerColumn(heading: "Company", links: companyLinks)
+            footerColumn(heading: "Support", links: supportLinks)
+            Text("© 2025 Example Company. All rights reserved.")
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .accessibilityLabel("Copyright 2025 Example Company. All rights reserved.")
+        }
+        .padding()
+        .background(Color(.systemGray6))
+    }
+
+    @ViewBuilder
+    func footerColumn(heading: String, links: [String]) -&gt; some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(heading)
+                .font(.headline)
+                .accessibilityAddTraits(.isHeader)
+            ForEach(links, id: \.self) { link in
+                Button(link) { }
+                    .accessibilityHint("Opens \(link) page")
+            }
+        }
+        .accessibilityElement(children: .contain)
+    }
+}</code></pre>
+            </div>
+          </section>
+          <section aria-labelledby="dev-android-heading">
+            <h2 id="dev-android-heading">Dev guidelines for Android</h2>
+            <ul>
+              <li>Wrap each footer link column in a container with <code>Modifier.semantics(mergeDescendants = false) {}</code> so TalkBack keeps each link individually focusable — merging a whole column into one element would prevent users from navigating to specific links.</li>
+              <li>Mark column headings with <code>Modifier.semantics { heading() }</code> so TalkBack users can jump between sections using the "Navigate by headings" gesture.</li>
+              <li>For social media icon buttons, apply <code>Modifier.semantics { contentDescription = "Follow us on Instagram" }</code> (or equivalent) on the <code>IconButton</code> to give TalkBack a meaningful label instead of announcing nothing or the icon's resource name.</li>
+              <li>Use <code>Modifier.clearAndSetSemantics {}</code> on decorative dividers or background shapes so they are invisible to TalkBack and do not interrupt the focus order within the footer.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.*
+import androidx.compose.ui.unit.dp
+
+@Composable
+fun FooterNavigation() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        FooterColumn(
+            heading = "Company",
+            links = listOf("About", "Careers", "Blog")
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        FooterColumn(
+            heading = "Support",
+            links = listOf("Contact", "Help centre", "Accessibility")
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = "© 2025 Example Company. All rights reserved.",
+            style = MaterialTheme.typography.labelSmall,
+            modifier = Modifier.semantics {
+                contentDescription =
+                    "Copyright 2025 Example Company. All rights reserved."
+            }
+        )
+    }
+}
+
+@Composable
+fun FooterColumn(heading: String, links: List&lt;String&gt;) {
+    Column {
+        Text(
+            text = heading,
+            style = MaterialTheme.typography.titleSmall,
+            modifier = Modifier.semantics { heading() }
+        )
+        links.forEach { link -&gt;
+            TextButton(onClick = {}) {
+                Text(
+                    text = link,
+                    modifier = Modifier.semantics {
+                        contentDescription = link
+                        role = Role.Button
+                    }
+                )
+            }
+        }
+    }
+}</code></pre>
+            </div>
+          </section>
           <section aria-labelledby="further-reading-heading">
             <h2 id="further-reading-heading">Further reading</h2>
             <ul>

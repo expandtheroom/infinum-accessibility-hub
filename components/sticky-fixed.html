@@ -235,6 +235,147 @@
             </div>
 </section>
 
+          <section aria-labelledby="dev-ios-heading">
+            <h2 id="dev-ios-heading">Dev guidelines for iOS</h2>
+            <ul>
+              <li><strong>Apply <code>.accessibilityLabel("...")</code> to icon-only FABs.</strong> A floating action button that displays only an icon has no accessible name by default. Provide a concise label that describes the action, such as <code>.accessibilityLabel("Add new item")</code>, so VoiceOver announces it meaningfully.</li>
+              <li><strong>Add <code>.accessibilityAddTraits(.isButton)</code> to custom FAB views.</strong> If the FAB is built from a <code>ZStack</code> or <code>Group</code> rather than a native <code>Button</code>, explicitly mark it with the button trait so VoiceOver treats it as an interactive control and announces it with the correct role.</li>
+              <li><strong>Use <code>.accessibilityElement(children: .combine)</code> to merge sticky header sub-elements into a single focus stop.</strong> A sticky header that contains a logo, title, and back button should combine its decorative children so VoiceOver does not land on each piece separately. Only interactive controls within the header should remain individually focusable.</li>
+              <li><strong>Hide decorative sticky elements from VoiceOver with <code>.accessibilityHidden(true)</code>.</strong> Visual separators, shadow views, or decorative background layers that are part of a sticky header or toolbar should be hidden from the accessibility tree so they do not create unnecessary focus stops.</li>
+              <li><strong>Test VoiceOver swipe navigation at each scroll position.</strong> Confirm that sticky headers do not cause VoiceOver focus to land on hidden or off-screen elements, and that swiping past the sticky area correctly moves focus into the scrollable content beneath it.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import SwiftUI
+
+struct StickyHeaderView: View {
+    let title: String
+    let onAdd: () -&gt; Void
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // Sticky header — decorative divider hidden from VoiceOver
+            HStack {
+                Text(title)
+                    .font(.headline)
+                Spacer()
+            }
+            .padding()
+            .background(Color(.systemBackground))
+            .overlay(
+                Rectangle()
+                    .frame(height: 1)
+                    .foregroundColor(Color(.separator))
+                    .accessibilityHidden(true),
+                alignment: .bottom
+            )
+
+            // Scrollable content
+            ScrollView {
+                LazyVStack(alignment: .leading, spacing: 12) {
+                    ForEach(0..&lt;20) { index in
+                        Text("Item \(index + 1)")
+                            .padding(.horizontal)
+                    }
+                }
+                .padding(.bottom, 80) // clearance for FAB
+            }
+        }
+        .overlay(alignment: .bottomTrailing) {
+            // Floating action button with explicit label and button trait
+            Button(action: onAdd) {
+                Image(systemName: "plus")
+                    .font(.title2)
+                    .padding(18)
+                    .background(Color.accentColor)
+                    .foregroundColor(.white)
+                    .clipShape(Circle())
+                    .shadow(radius: 4)
+            }
+            .accessibilityLabel("Add new item")
+            .accessibilityAddTraits(.isButton)
+            .padding(24)
+        }
+    }
+}</code></pre>
+            </div>
+          </section>
+          <section aria-labelledby="dev-android-heading">
+            <h2 id="dev-android-heading">Dev guidelines for Android</h2>
+            <ul>
+              <li><strong>Set <code>contentDescription</code> on icon-only FABs.</strong> A <code>FloatingActionButton</code> or <code>ExtendedFloatingActionButton</code> that shows only an icon must have a <code>Modifier.semantics { contentDescription = "Add new item" }</code> so TalkBack announces a meaningful label rather than reading the icon resource name.</li>
+              <li><strong>Apply <code>role = Role.Button</code> to custom FAB composables.</strong> If a FAB is built from a custom <code>Box</code> or <code>Surface</code> rather than the Material <code>FloatingActionButton</code> composable, set the role explicitly in its semantics block so TalkBack identifies it as a button.</li>
+              <li><strong>Use <code>mergeDescendants = true</code> on sticky toolbar containers.</strong> Group the logo, title text, and any non-interactive decorative elements in a parent composable with <code>Modifier.semantics(mergeDescendants = true) {}</code> so TalkBack traverses the toolbar as a single unit rather than announcing each child separately.</li>
+              <li><strong>Mark decorative sticky dividers and shadows with <code>clearAndSetSemantics {}</code>.</strong> Visual separators or elevation-drawn shadows that are part of a sticky header should have their semantics cleared so they are invisible to the accessibility tree and do not create unwanted focus stops during TalkBack swipe navigation.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.*
+import androidx.compose.ui.unit.dp
+
+@Composable
+fun StickyHeaderScreen(
+    title: String,
+    onAddClick: () -&gt; Unit
+) {
+    Scaffold(
+        topBar = {
+            // Sticky top bar — merge logo and title into one focus stop
+            Surface(shadowElevation = 4.dp) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                        .semantics(mergeDescendants = true) {},
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                }
+                // Decorative bottom divider — hidden from TalkBack
+                Divider(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .clearAndSetSemantics {}
+                )
+            }
+        },
+        floatingActionButton = {
+            // FAB with explicit content description and button role
+            FloatingActionButton(
+                onClick = onAddClick,
+                modifier = Modifier.semantics {
+                    contentDescription = "Add new item"
+                    role = Role.Button
+                }
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = null // described by parent semantics
+                )
+            }
+        }
+    ) { paddingValues -&gt;
+        LazyColumn(contentPadding = paddingValues) {
+            items(20) { index -&gt;
+                Text(
+                    text = "Item ${index + 1}",
+                    modifier = Modifier.padding(16.dp)
+                )
+            }
+        }
+    }
+}</code></pre>
+            </div>
+          </section>
           <section aria-labelledby="further-reading-heading">
             <h2 id="further-reading-heading">Further reading</h2>
             <ul>

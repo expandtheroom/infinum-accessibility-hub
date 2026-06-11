@@ -257,6 +257,101 @@
               </div>
             </div>
 </section>
+          <section aria-labelledby="dev-ios-heading">
+            <h2 id="dev-ios-heading">Dev guidelines for iOS</h2>
+            <ul>
+              <li>Use <code>.accessibilityElement(children: .contain)</code> on the tab strip container so VoiceOver keeps each tab as a separate focusable element — do not use <code>.combine</code>, which would merge all tabs into one unit.</li>
+              <li>Add <code>.accessibilityAddTraits(.isSelected)</code> to the currently active tab and remove it from all others when the selection changes, mirroring the <code>aria-selected</code> state on web.</li>
+              <li>Set a clear <code>.accessibilityLabel("Profile")</code> on each tab button — avoid labels like "Tab 1" or icon-only names that omit meaning.</li>
+              <li>When the active tab changes and the panel content updates, post a <code>UIAccessibility.post(notification: .screenChanged, argument: firstPanelElement)</code> notification to move VoiceOver focus into the new panel so users are not left stranded in the tab strip.</li>
+              <li>Mark purely decorative indicator views (e.g. the active underline bar) with <code>.accessibilityHidden(true)</code> so VoiceOver does not announce them as separate elements.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>struct AccessibleTabView: View {
+    @State private var selectedTab = 0
+    let tabs = ["Profile", "Security", "Notifications"]
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 0) {
+                ForEach(tabs.indices, id: \.self) { index in
+                    Button(action: {
+                        selectedTab = index
+                        UIAccessibility.post(
+                            notification: .screenChanged,
+                            argument: nil
+                        )
+                    }) {
+                        Text(tabs[index])
+                            .padding(.vertical, 12)
+                            .frame(maxWidth: .infinity)
+                    }
+                    .accessibilityLabel(tabs[index])
+                    .accessibilityAddTraits(
+                        selectedTab == index ? [.isSelected] : []
+                    )
+                }
+            }
+            .accessibilityElement(children: .contain)
+
+            TabPanelView(selectedTab: selectedTab)
+                .padding()
+        }
+    }
+}</code></pre>
+            </div>
+          </section>
+          <section aria-labelledby="dev-android-heading">
+            <h2 id="dev-android-heading">Dev guidelines for Android</h2>
+            <ul>
+              <li>Apply <code>Modifier.semantics { role = Role.Tab }</code> to each tab item so TalkBack announces it correctly as a tab, not a generic button.</li>
+              <li>Set <code>selected = true/false</code> in the <code>Tab</code> composable — Compose Maps this to a <code>stateDescription</code> of "Selected" or "Not selected" automatically; do not override <code>stateDescription</code> manually unless the default wording is inadequate.</li>
+              <li>Provide a meaningful <code>contentDescription</code> via <code>Modifier.semantics { contentDescription = "Profile tab" }</code> on any icon-only tab so TalkBack users receive a spoken label.</li>
+              <li>After switching tabs, use <code>LaunchedEffect</code> to request focus on the first meaningful element inside the new panel, preventing TalkBack from leaving the user stranded in the tab row.</li>
+            </ul>
+            <h3>Example code</h3>
+            <div class="code-example">
+              <pre><code>@Composable
+fun AccessibleTabLayout() {
+    val tabs = listOf("Profile", "Security", "Notifications")
+    var selectedIndex by remember { mutableStateOf(0) }
+    val focusRequester = remember { FocusRequester() }
+
+    Column {
+        TabRow(selectedTabIndex = selectedIndex) {
+            tabs.forEachIndexed { index, title -&gt;
+                Tab(
+                    selected = selectedIndex == index,
+                    onClick = { selectedIndex = index },
+                    modifier = Modifier.semantics {
+                        role = Role.Tab
+                        contentDescription = "$title tab"
+                    }
+                ) {
+                    Text(
+                        text = title,
+                        modifier = Modifier.padding(vertical = 12.dp)
+                    )
+                }
+            }
+        }
+
+        LaunchedEffect(selectedIndex) {
+            focusRequester.requestFocus()
+        }
+
+        Box(modifier = Modifier.focusRequester(focusRequester)) {
+            when (selectedIndex) {
+                0 -&gt; ProfilePanel()
+                1 -&gt; SecurityPanel()
+                2 -&gt; NotificationsPanel()
+            }
+        }
+    }
+}</code></pre>
+            </div>
+          </section>
           <section aria-labelledby="further-reading-heading">
             <h2 id="further-reading-heading">Further reading</h2>
             <ul>
